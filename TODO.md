@@ -128,7 +128,7 @@
   - [ ] Ses seviyesi kontrolü
 
 - [x] **Animasyonlar ve UX İyileştirmeleri** ✅
-  - [x] Countdown animasyonları ✅ (Pulse animasyonu, scale animasyonu)
+  - [x] Countdown animasyonları ✅ (Slide down animasyonu - sayılar yukarıdan aşağıya kayarak değişiyor, sadece değer değiştiğinde tetikleniyor)
   - [x] Sayfa geçiş animasyonları ✅ (Tab navigation'da shift animasyonu, fade in/scale animasyonları)
   - [x] Pull-to-refresh animasyonu ✅ (RefreshControl ile iyileştirildi, haptic feedback eklendi)
   - [x] Haptic feedback iyileştirmeleri ✅ (Tab değişiminde, refresh'te, dakika değişiminde, vakit geldiğinde)
@@ -194,8 +194,8 @@
   - [ ] Font seçenekleri
 
 - [x] **Ana Sayfa İyileştirmeleri** ✅
-  - [x] Daha büyük countdown gösterimi ✅ (64px font size, letter spacing ile)
-  - [x] Circular progress indicator ✅ (280px circular progress, SVG ile, progress animasyonu)
+  - [x] Countdown gösterimi optimize edildi ✅ (42px font size, letter spacing ile, ekrana sığacak şekilde ayarlandı)
+  - [x] Countdown animasyonu ✅ (Slide down animasyonu - sayılar yukarıdan aşağıya kayarak değişiyor, yumuşak geçiş)
 
 - [ ] **Vakitler Sayfası İyileştirmeleri**
   - [x] Tablo formatında görünüm ✅
@@ -365,6 +365,8 @@ Düşük Etki + Yüksek Efor:
 - ✅ Konum izinleri iyileştirildi (İzin durumu gösterimi, ayarlara yönlendirme, platform desteği, açıklayıcı mesajlar)
 - ✅ Dini günler sayfası eklendi (Ramazan, Bayramlar, Kandiller, Hicri/Miladi tarih gösterimi)
 - ✅ Ayarlar sayfasında TextInput klavye kapanma sorunu çözüldü (useRef ile uncontrolled component yaklaşımı)
+- ✅ Ana sayfa countdown animasyonu eklendi (Slide down animasyonu - sayılar yukarıdan aşağıya kayarak değişiyor, sadece değer değiştiğinde tetikleniyor)
+- ✅ Countdown gösterimi optimize edildi (42px font size, ekrana sığacak şekilde, yumuşak geçiş animasyonu)
 
 ### Teknik Detaylar
 - **i18n**: react-i18next kullanılıyor
