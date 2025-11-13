@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { addDays, endOfYear, format, isSameDay, subWeeks } from 'date-fns';
+import { tr } from 'date-fns/locale/tr';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
@@ -363,12 +364,14 @@ export default function PrayerTimesScreen() {
             },
           ]}
         >
-          <View style={styles.tableCell}>
-            <ActivityIndicator size="small" color="#FF9800" />
+          <View style={styles.tableCellDate}>
+            <Text style={[styles.dateCell, { color: isDark ? '#ffffff' : '#000000' }]}>
+              {format(date, 'd MMMM EEEE', { locale: tr })}
+            </Text>
           </View>
           {[1, 2, 3, 4, 5, 6].map((i) => (
             <View key={i} style={styles.tableCell}>
-              <Text style={[styles.loadingText, { color: isDark ? '#666666' : '#999999' }]}>-</Text>
+              <ActivityIndicator size="small" color="#FF9800" />
             </View>
           ))}
         </View>
@@ -387,9 +390,9 @@ export default function PrayerTimesScreen() {
             },
           ]}
         >
-          <View style={styles.tableCell}>
+          <View style={styles.tableCellDate}>
             <Text style={[styles.dateCell, { color: isDark ? '#ffffff' : '#000000' }]}>
-              {format(date, 'dd.MM')}
+              {format(date, 'd MMMM EEEE', { locale: tr })}
             </Text>
           </View>
           {[1, 2, 3, 4, 5, 6].map((i) => (
@@ -423,9 +426,9 @@ export default function PrayerTimesScreen() {
           isPast && { opacity: 0.6 },
         ]}
       >
-        <View style={styles.tableCell}>
+        <View style={styles.tableCellDate}>
           <Text style={[styles.dateCell, { color: isDark ? '#ffffff' : '#000000' }]}>
-            {format(date, 'dd.MM')}
+            {format(date, 'd MMMM EEEE', { locale: tr })}
           </Text>
           {isToday && (
             <Text style={[styles.todayLabel, { color: '#FF9800' }]}>Bugün</Text>
@@ -507,63 +510,55 @@ export default function PrayerTimesScreen() {
           onScroll={handleScroll}
           scrollEventThrottle={400}
         >
-          <ScrollView
-            horizontal={true}
-            showsHorizontalScrollIndicator={true}
-            contentContainerStyle={styles.tableContainer}
+          {/* Tablo Başlığı */}
+          <View
+            style={[
+              styles.tableHeader,
+              {
+                backgroundColor: isDark ? '#1a1a1a' : '#f5f5f5',
+                borderBottomColor: isDark ? '#333333' : '#e0e0e0',
+              },
+            ]}
           >
-            <View>
-              {/* Tablo Başlığı */}
-              <View
-                style={[
-                  styles.tableHeader,
-                  {
-                    backgroundColor: isDark ? '#1a1a1a' : '#f5f5f5',
-                    borderBottomColor: isDark ? '#333333' : '#e0e0e0',
-                  },
-                ]}
-              >
-                <View style={styles.tableHeaderCell}>
-                  <Text style={[styles.headerText, { color: isDark ? '#ffffff' : '#000000' }]}>
-                    Gün
-                  </Text>
-                </View>
-                <View style={styles.tableHeaderCell}>
-                  <Text style={[styles.headerText, { color: isDark ? '#ffffff' : '#000000' }]}>
-                    İmsak
-                  </Text>
-                </View>
-                <View style={styles.tableHeaderCell}>
-                  <Text style={[styles.headerText, { color: isDark ? '#ffffff' : '#000000' }]}>
-                    Güneş
-                  </Text>
-                </View>
-                <View style={styles.tableHeaderCell}>
-                  <Text style={[styles.headerText, { color: isDark ? '#ffffff' : '#000000' }]}>
-                    Öğle
-                  </Text>
-                </View>
-                <View style={styles.tableHeaderCell}>
-                  <Text style={[styles.headerText, { color: isDark ? '#ffffff' : '#000000' }]}>
-                    İkindi
-                  </Text>
-                </View>
-                <View style={styles.tableHeaderCell}>
-                  <Text style={[styles.headerText, { color: isDark ? '#ffffff' : '#000000' }]}>
-                    Akşam
-                  </Text>
-                </View>
-                <View style={styles.tableHeaderCell}>
-                  <Text style={[styles.headerText, { color: isDark ? '#ffffff' : '#000000' }]}>
-                    Yatsı
-                  </Text>
-                </View>
-              </View>
-
-              {/* Tablo Satırları */}
-              {prayerTimesList.map((dayData, index) => renderTableRow(dayData, index))}
+            <View style={styles.tableHeaderCellDate}>
+              <Text style={[styles.headerText, { color: isDark ? '#ffffff' : '#000000' }]}>
+                Gün
+              </Text>
             </View>
-          </ScrollView>
+            <View style={styles.tableHeaderCell}>
+              <Text style={[styles.headerText, { color: isDark ? '#ffffff' : '#000000' }]}>
+                İmsak
+              </Text>
+            </View>
+            <View style={styles.tableHeaderCell}>
+              <Text style={[styles.headerText, { color: isDark ? '#ffffff' : '#000000' }]}>
+                Güneş
+              </Text>
+            </View>
+            <View style={styles.tableHeaderCell}>
+              <Text style={[styles.headerText, { color: isDark ? '#ffffff' : '#000000' }]}>
+                Öğle
+              </Text>
+            </View>
+            <View style={styles.tableHeaderCell}>
+              <Text style={[styles.headerText, { color: isDark ? '#ffffff' : '#000000' }]}>
+                İkindi
+              </Text>
+            </View>
+            <View style={styles.tableHeaderCell}>
+              <Text style={[styles.headerText, { color: isDark ? '#ffffff' : '#000000' }]}>
+                Akşam
+              </Text>
+            </View>
+            <View style={styles.tableHeaderCell}>
+              <Text style={[styles.headerText, { color: isDark ? '#ffffff' : '#000000' }]}>
+                Yatsı
+              </Text>
+            </View>
+          </View>
+
+          {/* Tablo Satırları */}
+          {prayerTimesList.map((dayData, index) => renderTableRow(dayData, index))}
         </ScrollView>
       )}
     </View>
@@ -601,9 +596,6 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingBottom: 32,
   },
-  tableContainer: {
-    minWidth: '100%',
-  },
   // Tablo Stilleri
   tableHeader: {
     flexDirection: 'row',
@@ -611,14 +603,20 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 8,
   },
+  tableHeaderCellDate: {
+    flex: 2.5,
+    paddingHorizontal: 4,
+    alignItems: 'flex-start',
+    justifyContent: 'center',
+  },
   tableHeaderCell: {
-    width: 80,
-    paddingHorizontal: 6,
+    flex: 1,
+    paddingHorizontal: 4,
     alignItems: 'center',
     justifyContent: 'center',
   },
   headerText: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '700',
     textAlign: 'center',
   },
@@ -627,18 +625,25 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     paddingVertical: 8,
     paddingHorizontal: 8,
-    minHeight: 44,
+    minHeight: 50,
+  },
+  tableCellDate: {
+    flex: 2.5,
+    paddingHorizontal: 4,
+    justifyContent: 'center',
+    alignItems: 'flex-start',
   },
   tableCell: {
-    width: 80,
-    paddingHorizontal: 6,
+    flex: 1,
+    paddingHorizontal: 4,
     justifyContent: 'center',
     alignItems: 'center',
   },
   dateCell: {
-    fontSize: 13,
+    fontSize: 11,
     fontWeight: '600',
-    textAlign: 'center',
+    textAlign: 'left',
+    lineHeight: 16,
   },
   todayLabel: {
     fontSize: 9,
@@ -646,7 +651,7 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   timeCell: {
-    fontSize: 13,
+    fontSize: 12,
     fontFamily: 'monospace',
     textAlign: 'center',
   },
