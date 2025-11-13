@@ -1,19 +1,22 @@
-import React, { useState, useEffect } from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import React, { useEffect, useState } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TextInput,
-  TouchableOpacity,
-  Switch,
   ActivityIndicator,
   Alert,
+  FlatList,
+  Modal,
+  ScrollView,
+  StyleSheet,
+  Switch,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { usePrayerTimes } from '../../context/PrayerTimesContext';
 import { useTheme } from '../../context/ThemeContext';
+import { getAllCities, getDistrictsByCity } from '../../data/turkeyCities';
 import { LocationData, NotificationSettings } from '../../types';
-import { Ionicons } from '@expo/vector-icons';
 
 export default function SettingsScreen() {
   const { isDark, themeMode, setThemeMode } = useTheme();
@@ -26,9 +29,29 @@ export default function SettingsScreen() {
   } = usePrayerTimes();
 
   const [isAutoLocation, setIsAutoLocation] = useState(location?.isAuto ?? true);
-  const [city, setCity] = useState(location?.city || '');
-  const [country, setCountry] = useState(location?.country || '');
+  
+  // Kaydedilmiş konumdan il ve ilçeyi parse et
+  const parseSavedLocation = (savedCity: string) => {
+    if (savedCity.includes(' - ')) {
+      const parts = savedCity.split(' - ');
+      return { city: parts[0], district: parts[1] };
+    }
+    return { city: savedCity, district: '' };
+  };
+  
+  const [city, setCity] = useState(
+    location && !location.isAuto ? parseSavedLocation(location.city).city : ''
+  );
+  const [district, setDistrict] = useState(
+    location && !location.isAuto ? parseSavedLocation(location.city).district : ''
+  );
+  const [country] = useState('Türkiye');
   const [loading, setLoading] = useState(false);
+  
+  // Picker state'leri
+  const [showCityModal, setShowCityModal] = useState(false);
+  const [showDistrictModal, setShowDistrictModal] = useState(false);
+  const [availableDistricts, setAvailableDistricts] = useState<string[]>([]);
   const [notificationsEnabled, setNotificationsEnabled] = useState(notificationSettings.enabled);
   const [fajrEnabled, setFajrEnabled] = useState(notificationSettings.fajr.enabled);
   const [fajrBeforeMinutes, setFajrBeforeMinutes] = useState(notificationSettings.fajr.beforeMinutes.toString());
@@ -50,10 +73,41 @@ export default function SettingsScreen() {
     await setThemeMode(mode);
   };
 
+  // Location değiştiğinde state'leri güncelle
+  useEffect(() => {
+    if (location) {
+      setIsAutoLocation(location.isAuto);
+      if (!location.isAuto && location.city) {
+        const parsed = parseSavedLocation(location.city);
+        setCity(parsed.city);
+        setDistrict(parsed.district);
+      }
+    }
+  }, [location]);
+
+  // İl seçildiğinde ilçeleri yükle
+  useEffect(() => {
+    if (city) {
+      const districts = getDistrictsByCity(city);
+      setAvailableDistricts(districts);
+    }
+  }, [city]);
+
+  const handleCitySelect = (selectedCity: string) => {
+    setCity(selectedCity);
+    setDistrict(''); // İl değiştiğinde ilçeyi sıfırla
+    setShowCityModal(false);
+  };
+
+  const handleDistrictSelect = (selectedDistrict: string) => {
+    setDistrict(selectedDistrict);
+    setShowDistrictModal(false);
+  };
+
   const handleSaveLocation = async () => {
     if (!isAutoLocation) {
-      if (!city.trim() || !country.trim()) {
-        Alert.alert('Hata', 'Lütfen şehir ve ülke bilgilerini girin.');
+      if (!city.trim()) {
+        Alert.alert('Hata', 'Lütfen il seçin.');
         return;
       }
     }
@@ -63,9 +117,11 @@ export default function SettingsScreen() {
       if (isAutoLocation) {
         await setAutoLocation();
       } else {
+        // İlçe varsa il ile birlikte gönder, yoksa sadece il
+        const cityName = district ? `${city} - ${district}` : city;
         const locationData: LocationData = {
-          city: city.trim(),
-          country: country.trim(),
+          city: cityName,
+          country: 'Türkiye',
           isAuto: false,
         };
         await updateLocation(locationData);
@@ -257,44 +313,60 @@ export default function SettingsScreen() {
         {!isAutoLocation && (
           <View style={styles.inputContainer}>
             <Text style={[styles.inputLabel, { color: isDark ? '#ffffff' : '#000000' }]}>
-              Şehir
+              İl
             </Text>
-            <TextInput
+            <TouchableOpacity
               style={[
-                styles.input,
+                styles.pickerButton,
                 {
                   backgroundColor: isDark ? '#2a2a2a' : '#ffffff',
-                  color: isDark ? '#ffffff' : '#000000',
                   borderColor: isDark ? '#444444' : '#cccccc',
                 },
               ]}
-              value={city}
-              onChangeText={setCity}
-              placeholder="Örn: İstanbul"
-              placeholderTextColor={isDark ? '#666666' : '#999999'}
-            />
+              onPress={() => setShowCityModal(true)}
+            >
+              <Text
+                style={[
+                  styles.pickerButtonText,
+                  {
+                    color: city ? (isDark ? '#ffffff' : '#000000') : (isDark ? '#666666' : '#999999'),
+                  },
+                ]}
+              >
+                {city || 'İl seçin'}
+              </Text>
+              <Ionicons name="chevron-down" size={20} color={isDark ? '#666666' : '#999999'} />
+            </TouchableOpacity>
           </View>
         )}
 
-        {!isAutoLocation && (
+        {!isAutoLocation && city && (
           <View style={styles.inputContainer}>
             <Text style={[styles.inputLabel, { color: isDark ? '#ffffff' : '#000000' }]}>
-              Ülke
+              İlçe (Opsiyonel)
             </Text>
-            <TextInput
+            <TouchableOpacity
               style={[
-                styles.input,
+                styles.pickerButton,
                 {
                   backgroundColor: isDark ? '#2a2a2a' : '#ffffff',
-                  color: isDark ? '#ffffff' : '#000000',
                   borderColor: isDark ? '#444444' : '#cccccc',
                 },
               ]}
-              value={country}
-              onChangeText={setCountry}
-              placeholder="Örn: Türkiye"
-              placeholderTextColor={isDark ? '#666666' : '#999999'}
-            />
+              onPress={() => setShowDistrictModal(true)}
+            >
+              <Text
+                style={[
+                  styles.pickerButtonText,
+                  {
+                    color: district ? (isDark ? '#ffffff' : '#000000') : (isDark ? '#666666' : '#999999'),
+                  },
+                ]}
+              >
+                {district || 'İlçe seçin (opsiyonel)'}
+              </Text>
+              <Ionicons name="chevron-down" size={20} color={isDark ? '#666666' : '#999999'} />
+            </TouchableOpacity>
           </View>
         )}
 
@@ -407,6 +479,92 @@ export default function SettingsScreen() {
           </>
         )}
       </SettingSection>
+
+      {/* İl Seçim Modal */}
+      <Modal
+        visible={showCityModal}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setShowCityModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, { backgroundColor: isDark ? '#1a1a1a' : '#ffffff' }]}>
+            <View style={styles.modalHeader}>
+              <Text style={[styles.modalTitle, { color: isDark ? '#ffffff' : '#000000' }]}>
+                İl Seçin
+              </Text>
+              <TouchableOpacity onPress={() => setShowCityModal(false)}>
+                <Ionicons name="close" size={24} color={isDark ? '#ffffff' : '#000000'} />
+              </TouchableOpacity>
+            </View>
+            <FlatList
+              data={getAllCities()}
+              keyExtractor={(item) => item}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={[
+                    styles.modalItem,
+                    {
+                      backgroundColor: city === item ? (isDark ? '#2a2a2a' : '#f0f0f0') : 'transparent',
+                    },
+                  ]}
+                  onPress={() => handleCitySelect(item)}
+                >
+                  <Text style={[styles.modalItemText, { color: isDark ? '#ffffff' : '#000000' }]}>
+                    {item}
+                  </Text>
+                  {city === item && (
+                    <Ionicons name="checkmark" size={20} color="#FF9800" />
+                  )}
+                </TouchableOpacity>
+              )}
+            />
+          </View>
+        </View>
+      </Modal>
+
+      {/* İlçe Seçim Modal */}
+      <Modal
+        visible={showDistrictModal}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setShowDistrictModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, { backgroundColor: isDark ? '#1a1a1a' : '#ffffff' }]}>
+            <View style={styles.modalHeader}>
+              <Text style={[styles.modalTitle, { color: isDark ? '#ffffff' : '#000000' }]}>
+                İlçe Seçin
+              </Text>
+              <TouchableOpacity onPress={() => setShowDistrictModal(false)}>
+                <Ionicons name="close" size={24} color={isDark ? '#ffffff' : '#000000'} />
+              </TouchableOpacity>
+            </View>
+            <FlatList
+              data={availableDistricts}
+              keyExtractor={(item) => item}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={[
+                    styles.modalItem,
+                    {
+                      backgroundColor: district === item ? (isDark ? '#2a2a2a' : '#f0f0f0') : 'transparent',
+                    },
+                  ]}
+                  onPress={() => handleDistrictSelect(item)}
+                >
+                  <Text style={[styles.modalItemText, { color: isDark ? '#ffffff' : '#000000' }]}>
+                    {item}
+                  </Text>
+                  {district === item && (
+                    <Ionicons name="checkmark" size={20} color="#FF9800" />
+                  )}
+                </TouchableOpacity>
+              )}
+            />
+          </View>
+        </View>
+      </Modal>
     </ScrollView>
   );
 }
@@ -507,6 +665,54 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 8,
     right: 8,
+  },
+  pickerButton: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: 12,
+    marginTop: 8,
+  },
+  pickerButtonText: {
+    fontSize: 16,
+    flex: 1,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    maxHeight: '80%',
+    paddingBottom: 20,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(128, 128, 128, 0.3)',
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  modalItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(128, 128, 128, 0.2)',
+  },
+  modalItemText: {
+    fontSize: 16,
+    flex: 1,
   },
 });
 

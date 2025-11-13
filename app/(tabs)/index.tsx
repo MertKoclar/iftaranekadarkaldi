@@ -160,9 +160,11 @@ export default function HomeScreen() {
         <Text style={[styles.gregorianDate, { color: isDark ? '#ffffff' : '#000000' }]}>
           {formatGregorianDate(new Date())}
         </Text>
+        {/* 
         <Text style={[styles.hijriDate, { color: isDark ? '#cccccc' : '#666666' }]}>
           {formatHijriDate(date.hijri)}
         </Text>
+        */}
       </View>
 
       {/* Ana Vakit Gösterimi */}
@@ -176,7 +178,7 @@ export default function HomeScreen() {
         ]}
       >
         <Text style={[styles.mainPrayerLabel, { color: isDark ? '#cccccc' : '#666666' }]}>
-          {isFajrNext ? 'Sahur' : 'İftar'} Vakti
+          {isFajrNext ? 'Sahur' : 'İftar'}'a kalan süre
         </Text>
         <Text style={[styles.countdownText, { color: isDark ? '#ffffff' : '#000000' }]}>
           {formatCountdown()}

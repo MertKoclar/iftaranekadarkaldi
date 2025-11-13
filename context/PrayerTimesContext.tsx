@@ -1,8 +1,8 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { PrayerTimesData, LocationData, NotificationSettings } from '../types';
-import { getPrayerTimesByCoordinates, getPrayerTimesByCity } from '../services/api';
-import { getLocationData, getAutoLocation, saveLocationData } from '../services/location';
+import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import { getPrayerTimesByCity, getPrayerTimesByCoordinates } from '../services/api';
+import { getAutoLocation, getLocationData, saveLocationData } from '../services/location';
 import { getNotificationSettings, schedulePrayerNotifications } from '../services/notifications';
+import { LocationData, NotificationSettings, PrayerTimesData } from '../types';
 
 interface PrayerTimesContextType {
   prayerTimes: PrayerTimesData | null;
@@ -42,9 +42,22 @@ export const PrayerTimesProvider: React.FC<{ children: React.ReactNode }> = ({ c
           locationData.longitude
         );
       } else {
+        // İl ve ilçe bilgisini ayır
+        let cityName = locationData.city;
+        let districtName: string | undefined = undefined;
+        
+        if (locationData.city.includes(' - ')) {
+          const parts = locationData.city.split(' - ');
+          cityName = parts[0];
+          districtName = parts[1];
+        }
+        
         data = await getPrayerTimesByCity(
-          locationData.city,
-          locationData.country
+          cityName,
+          locationData.country,
+          2, // method
+          undefined, // date
+          districtName // ilçe bilgisi
         );
       }
       
