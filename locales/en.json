@@ -106,7 +106,15 @@
         "enabled": "Send Iftar notification",
         "beforeMinutes": "Notify before (minutes)? (0 = at prayer time)",
         "minutes": "minutes"
-      }
+      },
+      "test": {
+        "title": "Test Notification",
+        "description": "Click this button to test if the notification system is working.",
+        "send": "Send Test Notification"
+      },
+      "testSent": "Test notification sent! You will receive it in 2 seconds.",
+      "testError": "Failed to send test notification. Please check notification permissions.",
+      "testErrorNoTimes": "Prayer times not loaded. Please load prayer times first."
     },
     "theme": {
       "title": "Theme Settings",

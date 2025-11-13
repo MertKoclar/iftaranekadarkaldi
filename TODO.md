@@ -151,6 +151,11 @@
 ## 🐛 Bug Fixes ve İyileştirmeler
 
 ### Mevcut Sorunlar
+- [x] **Ayarlar Sayfası - TextInput Klavye Kapanma Sorunu** ✅
+  - Bildirim ayarlarındaki "Kaç dakika önce" input alanlarına yazarken klavye kapanıyordu
+  - Her karakter girişinden sonra klavye otomatik olarak kapanıyordu
+  - **Çözüm**: `useRef` ile uncontrolled component yaklaşımı kullanıldı, `defaultValue` prop'u ile state güncellemelerinden kaynaklanan re-render'lar önlendi
+  - "Done" tuşuna basınca klavyeyi kapatmak için `onSubmitEditing` ve `Keyboard.dismiss()` eklendi
 - [x] Vakitler sayfasında scroll performansı optimize edilmeli ✅ (Tablo formatına çevrildi)
 - [x] Cache temizleme mekanizması eklenmeli ✅ (7 günlük cache, otomatik temizleme)
 - [x] Hata yönetimi iyileştirmeleri ✅ (Kullanıcı dostu mesajlar, retry mekanizması)
@@ -366,6 +371,7 @@ Düşük Etki + Yüksek Efor:
 - ✅ Bildirim izinleri iyileştirildi (İzin durumu gösterimi, ayarlara yönlendirme, açıklayıcı mesajlar)
 - ✅ Konum izinleri iyileştirildi (İzin durumu gösterimi, ayarlara yönlendirme, platform desteği, açıklayıcı mesajlar)
 - ✅ Dini günler sayfası eklendi (Ramazan, Bayramlar, Kandiller, Hicri/Miladi tarih gösterimi)
+- ✅ Ayarlar sayfasında TextInput klavye kapanma sorunu çözüldü (useRef ile uncontrolled component yaklaşımı)
 
 ### Teknik Detaylar
 - **i18n**: react-i18next kullanılıyor
@@ -379,6 +385,6 @@ Düşük Etki + Yüksek Efor:
 
 ---
 
-**Son Güncelleme:** 2025-01-XX
+**Son Güncelleme:** 2025-01-13
 **Versiyon:** 1.0.0
 

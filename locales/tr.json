@@ -106,7 +106,15 @@
         "enabled": "İftar bildirimi gönder",
         "beforeMinutes": "Kaç dakika önce bildir? (0 = vakit geldiğinde)",
         "minutes": "dakika"
-      }
+      },
+      "test": {
+        "title": "Test Bildirimi",
+        "description": "Bildirim sisteminin çalışıp çalışmadığını test etmek için bu butona tıklayın.",
+        "send": "Test Bildirimi Gönder"
+      },
+      "testSent": "Test bildirimi gönderildi! 2 saniye içinde bildirimi alacaksınız.",
+      "testError": "Test bildirimi gönderilemedi. Lütfen bildirim izinlerini kontrol edin.",
+      "testErrorNoTimes": "Vakit bilgileri yüklenmedi. Lütfen önce vakitleri yükleyin."
     },
     "theme": {
       "title": "Tema Ayarları",

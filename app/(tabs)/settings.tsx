@@ -4,6 +4,7 @@ import {
   ActivityIndicator,
   Alert,
   FlatList,
+  Keyboard,
   Modal,
   ScrollView,
   StyleSheet,
@@ -17,19 +18,18 @@ import { useLanguage } from '../../context/LanguageContext';
 import { usePrayerTimes } from '../../context/PrayerTimesContext';
 import { useTheme } from '../../context/ThemeContext';
 import { getAllCities, getDistrictsByCity } from '../../data/turkeyCities';
-import { LocationData, NotificationSettings } from '../../types';
-import {
-  getNotificationPermissionStatus,
-  requestNotificationPermissions,
-  openNotificationSettings,
-  NotificationPermissionStatus,
-} from '../../services/notifications';
 import {
   getLocationPermissionStatus,
-  requestLocationPermission,
-  openLocationSettings,
   LocationPermissionStatus,
+  requestLocationPermission
 } from '../../services/location';
+import {
+  getNotificationPermissionStatus,
+  NotificationPermissionStatus,
+  requestNotificationPermissions,
+  sendTestNotification
+} from '../../services/notifications';
+import { LocationData, NotificationSettings } from '../../types';
 
 export default function SettingsScreen() {
   const { isDark, themeMode, setThemeMode } = useTheme();
@@ -37,6 +37,7 @@ export default function SettingsScreen() {
   const {
     location,
     notificationSettings,
+    prayerTimes,
     updateLocation,
     setAutoLocation,
     updateNotificationSettings,
@@ -68,7 +69,12 @@ export default function SettingsScreen() {
   const [availableDistricts, setAvailableDistricts] = useState<string[]>([]);
   const [notificationsEnabled, setNotificationsEnabled] = useState(notificationSettings.enabled);
   const [fajrEnabled, setFajrEnabled] = useState(notificationSettings.fajr.enabled);
+  
+  // TextInput için local state - klavye kapanma sorununu önlemek için ref kullanıyoruz
+  const fajrMinutesRef = React.useRef(notificationSettings.fajr.beforeMinutes.toString());
+  const maghribMinutesRef = React.useRef(notificationSettings.maghrib.beforeMinutes.toString());
   const [fajrBeforeMinutes, setFajrBeforeMinutes] = useState(notificationSettings.fajr.beforeMinutes.toString());
+  
   const [maghribEnabled, setMaghribEnabled] = useState(notificationSettings.maghrib.enabled);
   const [maghribBeforeMinutes, setMaghribBeforeMinutes] = useState(notificationSettings.maghrib.beforeMinutes.toString());
 
@@ -214,23 +220,58 @@ export default function SettingsScreen() {
   };
 
   const handleSaveNotifications = async () => {
+    // Ref'lerdeki güncel değerleri al
+    const fajrMinutes = parseInt(fajrMinutesRef.current) || 0;
+    const maghribMinutes = parseInt(maghribMinutesRef.current) || 0;
+    
     const settings: NotificationSettings = {
       enabled: notificationsEnabled,
       fajr: {
         enabled: fajrEnabled,
-        beforeMinutes: parseInt(fajrBeforeMinutes) || 0,
+        beforeMinutes: fajrMinutes,
       },
       maghrib: {
         enabled: maghribEnabled,
-        beforeMinutes: parseInt(maghribBeforeMinutes) || 0,
+        beforeMinutes: maghribMinutes,
       },
     };
 
     try {
       await updateNotificationSettings(settings);
+      // State'leri güncelle
+      setFajrBeforeMinutes(fajrMinutes.toString());
+      setMaghribBeforeMinutes(maghribMinutes.toString());
       Alert.alert(t('common.success'), t('settings.notifications.success'));
     } catch (error) {
       Alert.alert(t('common.error'), t('settings.notifications.error'));
+    }
+  };
+
+  const handleTestNotification = async () => {
+    if (!prayerTimes?.timings) {
+      Alert.alert(
+        t('common.error'),
+        t('settings.notifications.testErrorNoTimes')
+      );
+      return;
+    }
+
+    const hasPermission = await requestNotificationPermissions(true, t);
+    if (!hasPermission) {
+      return;
+    }
+
+    const success = await sendTestNotification(prayerTimes.timings, notificationSettings);
+    if (success) {
+      Alert.alert(
+        t('common.success'),
+        t('settings.notifications.testSent')
+      );
+    } else {
+      Alert.alert(
+        t('common.error'),
+        t('settings.notifications.testError')
+      );
     }
   };
 
@@ -278,6 +319,8 @@ export default function SettingsScreen() {
     <ScrollView
       style={[styles.container, { backgroundColor: isDark ? '#000000' : '#ffffff' }]}
       contentContainerStyle={styles.contentContainer}
+      keyboardShouldPersistTaps="handled"
+      keyboardDismissMode="none"
     >
       {/* Tema Ayarları */}
       <SettingSection title={t('settings.theme.title')}>
@@ -656,11 +699,19 @@ export default function SettingsScreen() {
                       borderColor: isDark ? '#444444' : '#cccccc',
                     },
                   ]}
-                  value={fajrBeforeMinutes}
-                  onChangeText={setFajrBeforeMinutes}
+                  defaultValue={fajrBeforeMinutes}
+                  onChangeText={(text) => {
+                    fajrMinutesRef.current = text.replace(/[^0-9]/g, '');
+                  }}
                   keyboardType="numeric"
                   placeholder="0"
                   placeholderTextColor={isDark ? '#666666' : '#999999'}
+                  blurOnSubmit={true}
+                  returnKeyType="done"
+                  maxLength={3}
+                  onSubmitEditing={() => {
+                    Keyboard.dismiss();
+                  }}
                 />
               </View>
             )}
@@ -690,11 +741,19 @@ export default function SettingsScreen() {
                       borderColor: isDark ? '#444444' : '#cccccc',
                     },
                   ]}
-                  value={maghribBeforeMinutes}
-                  onChangeText={setMaghribBeforeMinutes}
+                  defaultValue={maghribBeforeMinutes}
+                  onChangeText={(text) => {
+                    maghribMinutesRef.current = text.replace(/[^0-9]/g, '');
+                  }}
                   keyboardType="numeric"
                   placeholder="0"
                   placeholderTextColor={isDark ? '#666666' : '#999999'}
+                  blurOnSubmit={true}
+                  returnKeyType="done"
+                  maxLength={3}
+                  onSubmitEditing={() => {
+                    Keyboard.dismiss();
+                  }}
                 />
               </View>
             )}
@@ -707,6 +766,20 @@ export default function SettingsScreen() {
             </TouchableOpacity>
           </>
         )}
+      </SettingSection>
+
+      {/* Test Bildirimi */}
+      <SettingSection title={t('settings.notifications.test.title')}>
+        <Text style={[styles.testNotificationDescription, { color: isDark ? '#cccccc' : '#666666' }]}>
+          {t('settings.notifications.test.description')}
+        </Text>
+        <TouchableOpacity
+          style={[styles.testButton, { backgroundColor: '#FF9800' }]}
+          onPress={handleTestNotification}
+        >
+          <Ionicons name="notifications-outline" size={20} color="#ffffff" />
+          <Text style={styles.testButtonText}>{t('settings.notifications.test.send')}</Text>
+        </TouchableOpacity>
       </SettingSection>
 
       {/* İl Seçim Modal */}
@@ -988,6 +1061,24 @@ const styles = StyleSheet.create({
     fontSize: 11,
     marginTop: 6,
     lineHeight: 16,
+  },
+  testNotificationDescription: {
+    fontSize: 14,
+    marginBottom: 12,
+    lineHeight: 20,
+  },
+  testButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 14,
+    borderRadius: 8,
+    gap: 8,
+  },
+  testButtonText: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
 

@@ -3,6 +3,7 @@ import { Platform, Linking, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NotificationSettings, PrayerTime } from '../types';
 import { format, parse, addMinutes, isBefore, isAfter } from 'date-fns';
+import i18n from '../i18n/config';
 
 const NOTIFICATION_SETTINGS_KEY = '@prayer_times_notifications';
 
@@ -157,6 +158,128 @@ export const cancelAllNotifications = async (): Promise<void> => {
     await Notifications.cancelAllScheduledNotificationsAsync();
   } catch (error) {
     console.error('Bildirimler iptal edilirken hata:', error);
+  }
+};
+
+// Test bildirimi gönder (gerçek bildirim formatında)
+export const sendTestNotification = async (
+  timings: PrayerTime,
+  settings: NotificationSettings
+): Promise<boolean> => {
+  try {
+    const hasPermission = await requestNotificationPermissions(false);
+    if (!hasPermission) {
+      return false;
+    }
+
+    // Mevcut dili al
+    const currentLanguage = i18n.language || 'tr';
+    
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth();
+    const day = now.getDate();
+
+    // Sahur vakti
+    const fajrTime = parse(timings.Fajr, 'HH:mm', new Date());
+    const fajrDate = new Date(year, month, day, fajrTime.getHours(), fajrTime.getMinutes());
+    
+    // İftar vakti
+    const maghribTime = parse(timings.Maghrib, 'HH:mm', new Date());
+    const maghribDate = new Date(year, month, day, maghribTime.getHours(), maghribTime.getMinutes());
+    
+    // Yarının Sahur vakti (eğer bugünkü geçtiyse)
+    const tomorrowFajr = new Date(fajrDate);
+    if (fajrDate < now) {
+      tomorrowFajr.setDate(tomorrowFajr.getDate() + 1);
+    }
+
+    // Hangi vakit daha yakın?
+    const timeToFajr = tomorrowFajr.getTime() - now.getTime();
+    const timeToMaghrib = maghribDate.getTime() - now.getTime();
+    
+    // Çeviriler
+    const translations: { [key: string]: any } = {
+      tr: {
+        fajr: {
+          title: 'Sahur Vakti',
+          bodyNow: 'Sahur vakti geldi!',
+          bodyBefore: (minutes: number) => `Sahur vakti ${minutes} dakika sonra!`,
+        },
+        maghrib: {
+          title: 'İftar Vakti',
+          bodyNow: 'İftar vakti geldi!',
+          bodyBefore: (minutes: number) => `İftar vakti ${minutes} dakika sonra!`,
+        },
+      },
+      en: {
+        fajr: {
+          title: 'Sahur Time',
+          bodyNow: 'Sahur time has arrived!',
+          bodyBefore: (minutes: number) => `Sahur time in ${minutes} minutes!`,
+        },
+        maghrib: {
+          title: 'Iftar Time',
+          bodyNow: 'Iftar time has arrived!',
+          bodyBefore: (minutes: number) => `Iftar time in ${minutes} minutes!`,
+        },
+      },
+      ar: {
+        fajr: {
+          title: 'وقت السحور',
+          bodyNow: 'حان وقت السحور!',
+          bodyBefore: (minutes: number) => `وقت السحور بعد ${minutes} دقيقة!`,
+        },
+        maghrib: {
+          title: 'وقت الإفطار',
+          bodyNow: 'حان وقت الإفطار!',
+          bodyBefore: (minutes: number) => `وقت الإفطار بعد ${minutes} دقيقة!`,
+        },
+      },
+    };
+
+    const t = translations[currentLanguage] || translations.tr;
+    let notificationContent: { title: string; body: string };
+
+    // Sahur daha yakınsa
+    if (timeToFajr > 0 && (timeToMaghrib <= 0 || timeToFajr < timeToMaghrib)) {
+      const beforeMinutes = settings.fajr.beforeMinutes || 0;
+      notificationContent = {
+        title: t.fajr.title,
+        body: beforeMinutes > 0 ? t.fajr.bodyBefore(beforeMinutes) : t.fajr.bodyNow,
+      };
+    } 
+    // İftar daha yakınsa veya Sahur geçtiyse
+    else if (timeToMaghrib > 0) {
+      const beforeMinutes = settings.maghrib.beforeMinutes || 0;
+      notificationContent = {
+        title: t.maghrib.title,
+        body: beforeMinutes > 0 ? t.maghrib.bodyBefore(beforeMinutes) : t.maghrib.bodyNow,
+      };
+    } 
+    // Her ikisi de geçtiyse, yarının Sahur'unu göster
+    else {
+      const beforeMinutes = settings.fajr.beforeMinutes || 0;
+      notificationContent = {
+        title: t.fajr.title,
+        body: beforeMinutes > 0 ? t.fajr.bodyBefore(beforeMinutes) : t.fajr.bodyNow,
+      };
+    }
+
+    await Notifications.scheduleNotificationAsync({
+      content: {
+        ...notificationContent,
+        sound: true,
+      },
+      trigger: {
+        seconds: 2, // 2 saniye sonra gönder
+      },
+    });
+
+    return true;
+  } catch (error) {
+    console.error('Test bildirimi gönderilirken hata:', error);
+    return false;
   }
 };
 
