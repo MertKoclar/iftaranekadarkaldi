@@ -1,6 +1,7 @@
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { LanguageProvider } from "../context/LanguageContext";
+import { NetworkProvider } from "../context/NetworkContext";
 import { PrayerTimesProvider } from "../context/PrayerTimesContext";
 import { ThemeProvider, useTheme } from "../context/ThemeContext";
 import "../i18n/config";
@@ -24,12 +25,14 @@ function RootLayoutNav() {
 
 export default function RootLayout() {
   return (
-    <LanguageProvider>
-      <ThemeProvider>
-        <PrayerTimesProvider>
-          <RootLayoutNav />
-        </PrayerTimesProvider>
-      </ThemeProvider>
-    </LanguageProvider>
+    <NetworkProvider>
+      <LanguageProvider>
+        <ThemeProvider>
+          <PrayerTimesProvider>
+            <RootLayoutNav />
+          </PrayerTimesProvider>
+        </ThemeProvider>
+      </LanguageProvider>
+    </NetworkProvider>
   );
 }

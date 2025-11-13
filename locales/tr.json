@@ -13,7 +13,10 @@
     "settings": "Ayarlar",
     "times": "Vakitler",
     "home": "Ana Sayfa",
-    "retry": "Tekrar Dene"
+    "retry": "Tekrar Dene",
+    "offline": "Çevrimdışı",
+    "online": "Çevrimiçi",
+    "retrying": "Yeniden deneniyor..."
   },
   "home": {
     "title": "İftara ne kadar kaldı?",
@@ -104,6 +107,52 @@
       "turkish": "Türkçe",
       "english": "English",
       "arabic": "العربية"
+    }
+  },
+  "errors": {
+    "networkError": "İnternet bağlantısı yok. Lütfen bağlantınızı kontrol edin.",
+    "badRequest": "Geçersiz istek. Lütfen konum bilgilerinizi kontrol edin.",
+    "unauthorized": "Yetkilendirme hatası.",
+    "forbidden": "Bu işlem için yetkiniz yok.",
+    "notFound": "İstenen veri bulunamadı.",
+    "rateLimit": "Çok fazla istek gönderildi. Lütfen birkaç saniye sonra tekrar deneyin.",
+    "serverError": "Sunucu hatası. Lütfen daha sonra tekrar deneyin.",
+    "serviceUnavailable": "Servis şu anda kullanılamıyor. Lütfen daha sonra tekrar deneyin.",
+    "unknownError": "Beklenmeyen bir hata oluştu. Lütfen tekrar deneyin.",
+    "offlineMode": "Çevrimdışı modda. Son kaydedilen veriler gösteriliyor.",
+    "offlineDataUnavailable": "Çevrimdışı modda ve kaydedilmiş veri bulunamadı."
+  },
+  "permissions": {
+    "notification": {
+      "title": "Bildirim İzni Gerekli",
+      "message": "Sahur ve İftar vakitlerinde bildirim almak için bildirim izni gereklidir.",
+      "request": "İzin Ver",
+      "cancel": "İptal",
+      "denied": "Bildirim izni reddedildi. Bildirimleri kullanmak için lütfen ayarlardan izin verin.",
+      "openSettings": "Ayarlara Git",
+      "granted": "Bildirim izni verildi",
+      "checking": "Bildirim izni kontrol ediliyor...",
+      "status": {
+        "granted": "Aktif",
+        "denied": "Reddedildi",
+        "undetermined": "Beklemede"
+      }
+    },
+    "location": {
+      "title": "Konum İzni Gerekli",
+      "message": "Otomatik konum belirleme için konum izni gereklidir. Bu sayede size en yakın namaz vakitlerini gösterebiliriz.",
+      "request": "İzin Ver",
+      "cancel": "İptal",
+      "denied": "Konum izni reddedildi. Otomatik konum kullanmak için lütfen ayarlardan izin verin.",
+      "openSettings": "Ayarlara Git",
+      "granted": "Konum izni verildi",
+      "checking": "Konum izni kontrol ediliyor...",
+      "status": {
+        "granted": "Aktif",
+        "denied": "Reddedildi",
+        "undetermined": "Beklemede"
+      },
+      "whyNeeded": "Konum bilgisi, size en doğru namaz vakitlerini göstermek için kullanılır. Bu bilgi sadece cihazınızda saklanır ve hiçbir sunucuya gönderilmez."
     }
   }
 }

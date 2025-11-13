@@ -1,8 +1,14 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { getPrayerTimesByCity, getPrayerTimesByCoordinates } from '../services/api';
 import { getAutoLocation, getLocationData, saveLocationData } from '../services/location';
 import { getNotificationSettings, schedulePrayerNotifications } from '../services/notifications';
 import { LocationData, NotificationSettings, PrayerTimesData } from '../types';
+import { getErrorMessage } from '../utils/errorHandler';
+import { useLanguage } from './LanguageContext';
+import { useNetwork } from './NetworkContext';
+
+const CURRENT_PRAYER_TIMES_KEY = '@current_prayer_times';
 
 interface PrayerTimesContextType {
   prayerTimes: PrayerTimesData | null;
@@ -10,6 +16,8 @@ interface PrayerTimesContextType {
   notificationSettings: NotificationSettings;
   loading: boolean;
   error: string | null;
+  isOffline: boolean;
+  isRetrying: boolean;
   refreshPrayerTimes: () => Promise<void>;
   updateLocation: (location: LocationData) => Promise<void>;
   setAutoLocation: () => Promise<void>;
@@ -19,6 +27,8 @@ interface PrayerTimesContextType {
 const PrayerTimesContext = createContext<PrayerTimesContextType | undefined>(undefined);
 
 export const PrayerTimesProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { isConnected, isInternetReachable } = useNetwork();
+  const { t } = useLanguage();
   const [prayerTimes, setPrayerTimes] = useState<PrayerTimesData | null>(null);
   const [location, setLocation] = useState<LocationData | null>(null);
   const [notificationSettings, setNotificationSettings] = useState<NotificationSettings>({
@@ -28,60 +38,149 @@ export const PrayerTimesProvider: React.FC<{ children: React.ReactNode }> = ({ c
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isOffline, setIsOffline] = useState(false);
+  const [isRetrying, setIsRetrying] = useState(false);
 
-  const loadPrayerTimes = useCallback(async (locationData: LocationData, settings?: NotificationSettings) => {
+  // Offline durumunu kontrol et
+  useEffect(() => {
+    const offline = !isConnected || isInternetReachable === false;
+    setIsOffline(offline);
+  }, [isConnected, isInternetReachable]);
+
+  // Cache'den vakitleri yükle
+  const loadPrayerTimesFromCache = useCallback(async (): Promise<PrayerTimesData | null> => {
     try {
-      setLoading(true);
-      setError(null);
-      
-      let data: PrayerTimesData;
-      
-      if (locationData.isAuto && locationData.latitude && locationData.longitude) {
-        data = await getPrayerTimesByCoordinates(
-          locationData.latitude,
-          locationData.longitude
-        );
-      } else {
-        // İl ve ilçe bilgisini ayır
-        let cityName = locationData.city;
-        let districtName: string | undefined = undefined;
-        
-        if (locationData.city.includes(' - ')) {
-          const parts = locationData.city.split(' - ');
-          cityName = parts[0];
-          districtName = parts[1];
+      const cached = await AsyncStorage.getItem(CURRENT_PRAYER_TIMES_KEY);
+      if (cached) {
+        const { data, timestamp } = JSON.parse(cached);
+        // Bugünün verisi ise cache'den kullan
+        const today = new Date();
+        const cacheDate = new Date(timestamp);
+        if (
+          cacheDate.getDate() === today.getDate() &&
+          cacheDate.getMonth() === today.getMonth() &&
+          cacheDate.getFullYear() === today.getFullYear()
+        ) {
+          return data;
         }
-        
-        data = await getPrayerTimesByCity(
-          cityName,
-          locationData.country,
-          2, // method
-          undefined, // date
-          districtName // ilçe bilgisi
-        );
       }
-      
-      setPrayerTimes(data);
-      
-      // Bildirimleri ayarla (eğer ayarlar verilmişse)
-      const currentSettings = settings || notificationSettings;
-      if (currentSettings.enabled && data.timings) {
-        await schedulePrayerNotifications(data.timings, currentSettings);
-      }
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Namaz vakitleri alınırken bir hata oluştu';
-      setError(errorMessage);
-      console.error('Namaz vakitleri yüklenirken hata:', err);
-    } finally {
-      setLoading(false);
+    } catch (error) {
+      console.error('Cache okuma hatası:', error);
     }
-  }, [notificationSettings]);
+    return null;
+  }, []);
 
-  const refreshPrayerTimes = useCallback(async () => {
-    if (location) {
-      await loadPrayerTimes(location);
+  // Vakitleri cache'e kaydet
+  const savePrayerTimesToCache = useCallback(async (data: PrayerTimesData) => {
+    try {
+      await AsyncStorage.setItem(
+        CURRENT_PRAYER_TIMES_KEY,
+        JSON.stringify({
+          data,
+          timestamp: Date.now(),
+        })
+      );
+    } catch (error) {
+      console.error('Cache kaydetme hatası:', error);
     }
-  }, [location, loadPrayerTimes]);
+  }, []);
+
+  const loadPrayerTimes = useCallback(
+    async (locationData: LocationData, settings?: NotificationSettings, retryCount: number = 0) => {
+      try {
+        setLoading(true);
+        setError(null);
+        setIsRetrying(retryCount > 0);
+
+        // Offline modda cache'den yükle
+        if (isOffline) {
+          const cachedData = await loadPrayerTimesFromCache();
+          if (cachedData) {
+            setPrayerTimes(cachedData);
+            setError(t('errors.offlineMode'));
+            setLoading(false);
+            return;
+          } else {
+            setError(t('errors.offlineDataUnavailable'));
+            setLoading(false);
+            return;
+          }
+        }
+
+        let data: PrayerTimesData;
+
+        if (locationData.isAuto && locationData.latitude && locationData.longitude) {
+          data = await getPrayerTimesByCoordinates(
+            locationData.latitude,
+            locationData.longitude
+          );
+        } else {
+          // İl ve ilçe bilgisini ayır
+          let cityName = locationData.city;
+          let districtName: string | undefined = undefined;
+
+          if (locationData.city.includes(' - ')) {
+            const parts = locationData.city.split(' - ');
+            cityName = parts[0];
+            districtName = parts[1];
+          }
+
+          data = await getPrayerTimesByCity(
+            cityName,
+            locationData.country,
+            2, // method
+            undefined, // date
+            districtName // ilçe bilgisi
+          );
+        }
+
+        setPrayerTimes(data);
+        await savePrayerTimesToCache(data);
+        setIsOffline(false);
+
+        // Bildirimleri ayarla (eğer ayarlar verilmişse)
+        const currentSettings = settings || notificationSettings;
+        if (currentSettings.enabled && data.timings) {
+          await schedulePrayerNotifications(data.timings, currentSettings);
+        }
+      } catch (err) {
+        // Hata mesajını kullanıcı dostu hale getir
+        const apiError = getErrorMessage(err, t);
+        setError(apiError.userFriendlyMessage);
+
+        // Eğer retryable ise ve retry sayısı 3'ten azsa, cache'den yükle
+        if (apiError.retryable && retryCount < 3) {
+          const cachedData = await loadPrayerTimesFromCache();
+          if (cachedData) {
+            setPrayerTimes(cachedData);
+            setError(t('errors.offlineMode'));
+          }
+        } else {
+          // Retryable değilse veya retry limiti aşıldıysa, cache'den yükle
+          const cachedData = await loadPrayerTimesFromCache();
+          if (cachedData) {
+            setPrayerTimes(cachedData);
+            setError(apiError.userFriendlyMessage);
+          }
+        }
+
+        console.error('Namaz vakitleri yüklenirken hata:', err);
+      } finally {
+        setLoading(false);
+        setIsRetrying(false);
+      }
+    },
+    [notificationSettings, isOffline, t, loadPrayerTimesFromCache, savePrayerTimesToCache]
+  );
+
+  const refreshPrayerTimes = useCallback(
+    async (retryCount: number = 0) => {
+      if (location) {
+        await loadPrayerTimes(location, undefined, retryCount);
+      }
+    },
+    [location, loadPrayerTimes]
+  );
 
   const updateLocation = useCallback(async (locationData: LocationData) => {
     await saveLocationData(locationData);
@@ -92,19 +191,19 @@ export const PrayerTimesProvider: React.FC<{ children: React.ReactNode }> = ({ c
   const setAutoLocation = useCallback(async () => {
     setLoading(true);
     try {
-      const autoLocation = await getAutoLocation();
+      const autoLocation = await getAutoLocation(false, t);
       if (autoLocation) {
         setLocation(autoLocation);
         await loadPrayerTimes(autoLocation);
       } else {
-        setError('Konum alınamadı. Lütfen manuel olarak şehir ve ülke girin.');
+        setError(t('errors.offlineDataUnavailable'));
         setLoading(false);
       }
     } catch (err) {
-      setError('Konum alınırken bir hata oluştu');
+      setError(t('errors.unknownError'));
       setLoading(false);
     }
-  }, [loadPrayerTimes]);
+  }, [loadPrayerTimes, t]);
 
   const updateNotificationSettings = useCallback(async (settings: NotificationSettings) => {
     setNotificationSettings(settings);
@@ -125,6 +224,12 @@ export const PrayerTimesProvider: React.FC<{ children: React.ReactNode }> = ({ c
         // Bildirim ayarlarını yükle
         const settings = await getNotificationSettings();
         setNotificationSettings(settings);
+        
+        // Önce cache'den veri yüklemeyi dene (hızlı başlangıç için)
+        const cachedData = await loadPrayerTimesFromCache();
+        if (cachedData) {
+          setPrayerTimes(cachedData);
+        }
         
         // Konum verilerini yükle
         const savedLocation = await getLocationData();
@@ -153,12 +258,25 @@ export const PrayerTimesProvider: React.FC<{ children: React.ReactNode }> = ({ c
             setLocation(autoLocation);
             await loadPrayerTimes(autoLocation, settings);
           } else {
-            setError('Konum alınamadı. Lütfen manuel olarak şehir ve ülke girin.');
+            // Konum alınamadıysa, cache'den veri varsa onu kullan
+            if (cachedData) {
+              setError(t('errors.offlineMode'));
+            } else {
+              setError(t('errors.offlineDataUnavailable'));
+            }
             setLoading(false);
           }
         }
       } catch (err) {
-        setError('Uygulama başlatılırken bir hata oluştu');
+        // Hata durumunda cache'den veri yüklemeyi dene
+        const cachedData = await loadPrayerTimesFromCache();
+        if (cachedData) {
+          setPrayerTimes(cachedData);
+          setError(t('errors.offlineMode'));
+        } else {
+          const apiError = getErrorMessage(err, t);
+          setError(apiError.userFriendlyMessage);
+        }
         console.error('Başlatma hatası:', err);
         setLoading(false);
       }
@@ -189,6 +307,8 @@ export const PrayerTimesProvider: React.FC<{ children: React.ReactNode }> = ({ c
         notificationSettings,
         loading,
         error,
+        isOffline,
+        isRetrying,
         refreshPrayerTimes,
         updateLocation,
         setAutoLocation,

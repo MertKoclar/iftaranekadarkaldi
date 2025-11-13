@@ -1,4 +1,5 @@
 import * as Notifications from 'expo-notifications';
+import { Platform, Linking, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NotificationSettings, PrayerTime } from '../types';
 import { format, parse, addMinutes, isBefore, isAfter } from 'date-fns';
@@ -14,17 +15,94 @@ Notifications.setNotificationHandler({
   }),
 });
 
-export const requestNotificationPermissions = async (): Promise<boolean> => {
+export type NotificationPermissionStatus = 'granted' | 'denied' | 'undetermined';
+
+export interface NotificationPermissionResult {
+  status: NotificationPermissionStatus;
+  canAskAgain: boolean;
+}
+
+export const getNotificationPermissionStatus = async (): Promise<NotificationPermissionResult> => {
   try {
-    const { status: existingStatus } = await Notifications.getPermissionsAsync();
-    let finalStatus = existingStatus;
+    const { status, canAskAgain } = await Notifications.getPermissionsAsync();
+    return {
+      status: status as NotificationPermissionStatus,
+      canAskAgain: canAskAgain ?? true,
+    };
+  } catch (error) {
+    console.error('Bildirim izni durumu kontrol edilirken hata:', error);
+    return {
+      status: 'undetermined',
+      canAskAgain: true,
+    };
+  }
+};
+
+export const openNotificationSettings = async (): Promise<void> => {
+  try {
+    if (Platform.OS === 'ios') {
+      await Linking.openURL('app-settings:');
+    } else {
+      await Linking.openSettings();
+    }
+  } catch (error) {
+    console.error('Ayarlar açılırken hata:', error);
+  }
+};
+
+export const requestNotificationPermissions = async (
+  showAlert: boolean = false,
+  t?: (key: string) => string
+): Promise<boolean> => {
+  try {
+    const { status: existingStatus, canAskAgain } = await Notifications.getPermissionsAsync();
     
-    if (existingStatus !== 'granted') {
-      const { status } = await Notifications.requestPermissionsAsync();
-      finalStatus = status;
+    // Eğer zaten izin verilmişse
+    if (existingStatus === 'granted') {
+      return true;
     }
     
-    return finalStatus === 'granted';
+    // Eğer izin reddedilmişse ve tekrar sorulamıyorsa
+    if (existingStatus === 'denied' && !canAskAgain) {
+      if (showAlert && t) {
+        Alert.alert(
+          t('permissions.notification.title'),
+          t('permissions.notification.denied'),
+          [
+            { text: t('common.cancel'), style: 'cancel' },
+            {
+              text: t('permissions.notification.openSettings'),
+              onPress: openNotificationSettings,
+            },
+          ]
+        );
+      }
+      return false;
+    }
+    
+    // İzin iste
+    const { status } = await Notifications.requestPermissionsAsync();
+    
+    if (status === 'granted') {
+      return true;
+    }
+    
+    // İzin reddedildiyse ve alert gösterilecekse
+    if (showAlert && t && status === 'denied') {
+      Alert.alert(
+        t('permissions.notification.title'),
+        t('permissions.notification.denied'),
+        [
+          { text: t('common.cancel'), style: 'cancel' },
+          {
+            text: t('permissions.notification.openSettings'),
+            onPress: openNotificationSettings,
+          },
+        ]
+      );
+    }
+    
+    return false;
   } catch (error) {
     console.error('Bildirim izni alınırken hata:', error);
     return false;
@@ -95,7 +173,7 @@ export const schedulePrayerNotifications = async (
       return;
     }
     
-    const hasPermission = await requestNotificationPermissions();
+    const hasPermission = await requestNotificationPermissions(false);
     if (!hasPermission) {
       console.warn('Bildirim izni verilmedi');
       return;

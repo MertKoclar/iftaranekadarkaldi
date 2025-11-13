@@ -1,7 +1,24 @@
 import { PrayerTimesData } from '../types';
 import { getCoordinates } from '../data/turkeyCityCoordinates';
+import { getErrorMessage, retryWithBackoff, ApiError } from '../utils/errorHandler';
 
 const API_BASE_URL = 'https://api.aladhan.com/v1';
+
+// Hata mesajlarını çevirmek için basit bir fonksiyon (i18n olmadan)
+const getErrorTranslation = (code: string): string => {
+  const translations: { [key: string]: string } = {
+    NETWORK_ERROR: 'İnternet bağlantısı yok. Lütfen bağlantınızı kontrol edin.',
+    BAD_REQUEST: 'Geçersiz istek. Lütfen konum bilgilerinizi kontrol edin.',
+    UNAUTHORIZED: 'Yetkilendirme hatası.',
+    FORBIDDEN: 'Bu işlem için yetkiniz yok.',
+    NOT_FOUND: 'İstenen veri bulunamadı.',
+    RATE_LIMIT: 'Çok fazla istek gönderildi. Lütfen birkaç saniye sonra tekrar deneyin.',
+    SERVER_ERROR: 'Sunucu hatası. Lütfen daha sonra tekrar deneyin.',
+    SERVICE_UNAVAILABLE: 'Servis şu anda kullanılamıyor. Lütfen daha sonra tekrar deneyin.',
+    UNKNOWN_ERROR: 'Beklenmeyen bir hata oluştu. Lütfen tekrar deneyin.',
+  };
+  return translations[code] || translations.UNKNOWN_ERROR;
+};
 
 // Türkçe şehir adlarını İngilizce'ye çevir (Aladhan API için)
 const cityNameMapping: { [key: string]: string } = {
@@ -22,7 +39,10 @@ export interface PrayerTimesParams {
   date?: string; // YYYY-MM-DD formatında
 }
 
-export const getPrayerTimes = async (params: PrayerTimesParams): Promise<PrayerTimesData> => {
+export const getPrayerTimes = async (
+  params: PrayerTimesParams,
+  retryCount: number = 3
+): Promise<PrayerTimesData> => {
   const { city, country, latitude, longitude, method = 2, date } = params;
   
   let url = `${API_BASE_URL}/timings`;
@@ -54,29 +74,43 @@ export const getPrayerTimes = async (params: PrayerTimesParams): Promise<PrayerT
   // Debug: URL'yi logla
   console.log('API isteği URL:', url);
   
-  try {
-    const response = await fetch(url);
-    const data = await response.json();
-    
-    if (!response.ok) {
-      const errorMessage = data.status || data.data?.status || `API hatası: ${response.status}`;
-      console.error('API yanıt hatası:', errorMessage, 'URL:', url);
-      console.error('API yanıt verisi:', JSON.stringify(data, null, 2));
-      throw new Error(errorMessage);
+  // Retry mekanizması ile API çağrısı
+  return retryWithBackoff(async () => {
+    try {
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        // HTTP status koduna göre hata oluştur
+        const error = new Error(`HTTP ${response.status}`);
+        (error as any).status = response.status;
+        throw error;
+      }
+      
+      if (data.code !== 200) {
+        const errorMessage = data.status || data.data?.status || 'API hatası';
+        const error = new Error(errorMessage);
+        (error as any).status = data.code;
+        throw error;
+      }
+      
+      return data.data;
+    } catch (error) {
+      // Network hatası kontrolü
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        const networkError = new Error('NETWORK_ERROR');
+        (networkError as any).isNetworkError = true;
+        throw networkError;
+      }
+      throw error;
     }
-    
-    if (data.code !== 200) {
-      const errorMessage = data.status || data.data?.status || 'API hatası';
-      console.error('API veri hatası:', errorMessage, 'URL:', url);
-      console.error('API yanıt verisi:', JSON.stringify(data, null, 2));
-      throw new Error(errorMessage);
-    }
-    
-    return data.data;
-  } catch (error) {
-    console.error('Namaz vakitleri alınırken hata:', error);
-    throw error;
-  }
+  }, retryCount);
 };
 
 export const getPrayerTimesByCoordinates = async (

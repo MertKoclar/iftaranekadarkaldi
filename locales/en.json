@@ -13,7 +13,10 @@
     "settings": "Settings",
     "times": "Times",
     "home": "Home",
-    "retry": "Retry"
+    "retry": "Retry",
+    "offline": "Offline",
+    "online": "Online",
+    "retrying": "Retrying..."
   },
   "home": {
     "title": "How long until Iftar?",
@@ -104,6 +107,52 @@
       "turkish": "Türkçe",
       "english": "English",
       "arabic": "العربية"
+    }
+  },
+  "errors": {
+    "networkError": "No internet connection. Please check your connection.",
+    "badRequest": "Invalid request. Please check your location information.",
+    "unauthorized": "Authorization error.",
+    "forbidden": "You don't have permission for this operation.",
+    "notFound": "Requested data not found.",
+    "rateLimit": "Too many requests. Please try again in a few seconds.",
+    "serverError": "Server error. Please try again later.",
+    "serviceUnavailable": "Service is currently unavailable. Please try again later.",
+    "unknownError": "An unexpected error occurred. Please try again.",
+    "offlineMode": "Offline mode. Showing last saved data.",
+    "offlineDataUnavailable": "Offline mode and no saved data found."
+  },
+  "permissions": {
+    "notification": {
+      "title": "Notification Permission Required",
+      "message": "Notification permission is required to receive notifications for Sahur and Iftar times.",
+      "request": "Grant Permission",
+      "cancel": "Cancel",
+      "denied": "Notification permission denied. Please grant permission from settings to use notifications.",
+      "openSettings": "Open Settings",
+      "granted": "Notification permission granted",
+      "checking": "Checking notification permission...",
+      "status": {
+        "granted": "Active",
+        "denied": "Denied",
+        "undetermined": "Pending"
+      }
+    },
+    "location": {
+      "title": "Location Permission Required",
+      "message": "Location permission is required for automatic location detection. This allows us to show you the nearest prayer times.",
+      "request": "Grant Permission",
+      "cancel": "Cancel",
+      "denied": "Location permission denied. Please grant permission from settings to use automatic location.",
+      "openSettings": "Open Settings",
+      "granted": "Location permission granted",
+      "checking": "Checking location permission...",
+      "status": {
+        "granted": "Active",
+        "denied": "Denied",
+        "undetermined": "Pending"
+      },
+      "whyNeeded": "Location information is used to show you the most accurate prayer times. This information is only stored on your device and is never sent to any server."
     }
   }
 }

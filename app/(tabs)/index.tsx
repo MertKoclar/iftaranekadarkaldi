@@ -56,6 +56,8 @@ export default function HomeScreen() {
     location,
     loading,
     error,
+    isOffline,
+    isRetrying,
     refreshPrayerTimes,
   } = usePrayerTimes();
 
@@ -147,15 +149,31 @@ export default function HomeScreen() {
         />
       }
     >
-      {/* Konum Bilgisi */}
-      {location && (
-        <View style={styles.locationContainer}>
-          <Ionicons name="location" size={20} color="#FF9800" />
-          <Text style={[styles.locationText, { color: isDark ? '#cccccc' : '#666666' }]}>
-            {location.city}, {location.country}
-          </Text>
-        </View>
-      )}
+          {/* Konum Bilgisi ve Offline Göstergesi */}
+          {location && (
+            <View style={styles.locationContainer}>
+              <Ionicons name="location" size={20} color="#FF9800" />
+              <Text style={[styles.locationText, { color: isDark ? '#cccccc' : '#666666' }]}>
+                {location.city}, {location.country}
+              </Text>
+              {isOffline && (
+                <View style={styles.offlineIndicator}>
+                  <Ionicons name="cloud-offline" size={16} color="#f44336" />
+                  <Text style={[styles.offlineText, { color: '#f44336' }]}>
+                    {t('common.offline')}
+                  </Text>
+                </View>
+              )}
+              {isRetrying && (
+                <View style={styles.retryIndicator}>
+                  <ActivityIndicator size="small" color="#FF9800" />
+                  <Text style={[styles.retryText, { color: isDark ? '#cccccc' : '#666666' }]}>
+                    {t('common.retrying')}
+                  </Text>
+                </View>
+              )}
+            </View>
+          )}
 
       {/* Tarih Bilgisi */}
       <View style={styles.dateContainer}>
@@ -241,6 +259,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
     marginBottom: 8,
     gap: 8,
+    flexWrap: 'wrap',
   },
   locationText: {
     fontSize: 16,
@@ -344,6 +363,29 @@ const styles = StyleSheet.create({
   errorBannerText: {
     color: '#ffffff',
     textAlign: 'center',
+  },
+  offlineIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    backgroundColor: 'rgba(244, 67, 54, 0.1)',
+  },
+  offlineText: {
+    marginLeft: 4,
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  retryIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  retryText: {
+    marginLeft: 8,
+    fontSize: 12,
   },
 });
 

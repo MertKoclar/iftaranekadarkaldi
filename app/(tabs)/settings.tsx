@@ -18,6 +18,18 @@ import { usePrayerTimes } from '../../context/PrayerTimesContext';
 import { useTheme } from '../../context/ThemeContext';
 import { getAllCities, getDistrictsByCity } from '../../data/turkeyCities';
 import { LocationData, NotificationSettings } from '../../types';
+import {
+  getNotificationPermissionStatus,
+  requestNotificationPermissions,
+  openNotificationSettings,
+  NotificationPermissionStatus,
+} from '../../services/notifications';
+import {
+  getLocationPermissionStatus,
+  requestLocationPermission,
+  openLocationSettings,
+  LocationPermissionStatus,
+} from '../../services/location';
 
 export default function SettingsScreen() {
   const { isDark, themeMode, setThemeMode } = useTheme();
@@ -60,6 +72,11 @@ export default function SettingsScreen() {
   const [maghribEnabled, setMaghribEnabled] = useState(notificationSettings.maghrib.enabled);
   const [maghribBeforeMinutes, setMaghribBeforeMinutes] = useState(notificationSettings.maghrib.beforeMinutes.toString());
 
+  // İzin durumları
+  const [notificationPermissionStatus, setNotificationPermissionStatus] = useState<NotificationPermissionStatus>('undetermined');
+  const [locationPermissionStatus, setLocationPermissionStatus] = useState<LocationPermissionStatus>('undetermined');
+  const [checkingPermissions, setCheckingPermissions] = useState(false);
+
   // Tema modu state'lerini güncelle
   const [isLightMode, setIsLightMode] = useState(themeMode === 'light');
   const [isDarkMode, setIsDarkMode] = useState(themeMode === 'dark');
@@ -70,6 +87,27 @@ export default function SettingsScreen() {
     setIsDarkMode(themeMode === 'dark');
     setIsAutoMode(themeMode === 'auto');
   }, [themeMode]);
+
+  // İzin durumlarını kontrol et
+  useEffect(() => {
+    const checkPermissions = async () => {
+      setCheckingPermissions(true);
+      try {
+        const [notifStatus, locStatus] = await Promise.all([
+          getNotificationPermissionStatus(),
+          getLocationPermissionStatus(),
+        ]);
+        setNotificationPermissionStatus(notifStatus.status);
+        setLocationPermissionStatus(locStatus.status);
+      } catch (error) {
+        console.error('İzin durumları kontrol edilirken hata:', error);
+      } finally {
+        setCheckingPermissions(false);
+      }
+    };
+
+    checkPermissions();
+  }, []);
 
   const handleThemeChange = async (mode: 'light' | 'dark' | 'auto') => {
     await setThemeMode(mode);
@@ -117,7 +155,16 @@ export default function SettingsScreen() {
     setLoading(true);
     try {
       if (isAutoLocation) {
+        // Otomatik konum için izin kontrolü
+        const hasPermission = await requestLocationPermission(true, t);
+        if (!hasPermission) {
+          setLoading(false);
+          return;
+        }
         await setAutoLocation();
+        // İzin durumunu güncelle
+        const locStatus = await getLocationPermissionStatus();
+        setLocationPermissionStatus(locStatus.status);
       } else {
         // İlçe varsa il ile birlikte gönder, yoksa sadece il
         const cityName = district ? `${city} - ${district}` : city;
@@ -133,6 +180,36 @@ export default function SettingsScreen() {
       Alert.alert(t('common.error'), t('settings.location.errorSaving'));
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleRequestNotificationPermission = async () => {
+    setCheckingPermissions(true);
+    try {
+      const granted = await requestNotificationPermissions(true, t);
+      if (granted) {
+        const status = await getNotificationPermissionStatus();
+        setNotificationPermissionStatus(status.status);
+      }
+    } catch (error) {
+      console.error('Bildirim izni istenirken hata:', error);
+    } finally {
+      setCheckingPermissions(false);
+    }
+  };
+
+  const handleRequestLocationPermission = async () => {
+    setCheckingPermissions(true);
+    try {
+      const granted = await requestLocationPermission(true, t);
+      if (granted) {
+        const status = await getLocationPermissionStatus();
+        setLocationPermissionStatus(status.status);
+      }
+    } catch (error) {
+      console.error('Konum izni istenirken hata:', error);
+    } finally {
+      setCheckingPermissions(false);
     }
   };
 
@@ -157,14 +234,22 @@ export default function SettingsScreen() {
     }
   };
 
-  const SettingSection: React.FC<{ title: string; children: React.ReactNode }> = ({
+  const SettingSection: React.FC<{ 
+    title: string; 
+    children: React.ReactNode;
+    badge?: React.ReactNode;
+  }> = ({
     title,
     children,
+    badge,
   }) => (
     <View style={[styles.section, { backgroundColor: isDark ? '#1a1a1a' : '#f5f5f5' }]}>
-      <Text style={[styles.sectionTitle, { color: isDark ? '#ffffff' : '#000000' }]}>
-        {title}
-      </Text>
+      <View style={styles.sectionTitleRow}>
+        <Text style={[styles.sectionTitle, { color: isDark ? '#ffffff' : '#000000' }]}>
+          {title}
+        </Text>
+        {badge}
+      </View>
       {children}
     </View>
   );
@@ -415,7 +500,24 @@ export default function SettingsScreen() {
       </SettingSection>
 
       {/* Konum Ayarları */}
-      <SettingSection title={t('settings.location.title')}>
+      <SettingSection 
+        title={t('settings.location.title')}
+        badge={
+          isAutoLocation ? (
+            <TouchableOpacity
+              style={styles.permissionBadge}
+              onPress={locationPermissionStatus !== 'granted' ? handleRequestLocationPermission : undefined}
+              disabled={checkingPermissions || locationPermissionStatus === 'granted'}
+            >
+              <Ionicons
+                name={locationPermissionStatus === 'granted' ? 'checkmark-circle' : 'close-circle'}
+                size={16}
+                color={locationPermissionStatus === 'granted' ? '#4CAF50' : '#f44336'}
+              />
+            </TouchableOpacity>
+          ) : null
+        }
+      >
         <SettingRow
           label={t('settings.location.auto')}
           value={isAutoLocation}
@@ -505,7 +607,22 @@ export default function SettingsScreen() {
       </SettingSection>
 
       {/* Bildirim Ayarları */}
-      <SettingSection title={t('settings.notifications.title')}>
+      <SettingSection 
+        title={t('settings.notifications.title')}
+        badge={
+          <TouchableOpacity
+            style={styles.permissionBadge}
+            onPress={notificationPermissionStatus !== 'granted' ? handleRequestNotificationPermission : undefined}
+            disabled={checkingPermissions || notificationPermissionStatus === 'granted'}
+          >
+            <Ionicons
+              name={notificationPermissionStatus === 'granted' ? 'checkmark-circle' : 'close-circle'}
+              size={16}
+              color={notificationPermissionStatus === 'granted' ? '#4CAF50' : '#f44336'}
+            />
+          </TouchableOpacity>
+        }
+      >
         <SettingRow
           label={t('settings.notifications.enabled')}
           value={notificationsEnabled}
@@ -693,10 +810,20 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 12,
   },
+  sectionTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 16,
+  },
   sectionTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    marginBottom: 16,
+    flex: 1,
+  },
+  permissionBadge: {
+    padding: 4,
+    marginLeft: 8,
   },
   settingRow: {
     flexDirection: 'row',
@@ -825,6 +952,42 @@ const styles = StyleSheet.create({
   modalItemText: {
     fontSize: 16,
     flex: 1,
+  },
+  permissionStatusContainer: {
+    marginBottom: 12,
+    padding: 10,
+    borderRadius: 8,
+    backgroundColor: 'rgba(255, 152, 0, 0.1)',
+  },
+  permissionStatusRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 6,
+  },
+  permissionStatusText: {
+    fontSize: 13,
+    fontWeight: '500',
+  },
+  permissionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    padding: 8,
+    borderRadius: 6,
+    backgroundColor: 'rgba(255, 152, 0, 0.2)',
+    marginTop: 6,
+  },
+  permissionButtonText: {
+    color: '#FF9800',
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  permissionInfoText: {
+    fontSize: 11,
+    marginTop: 6,
+    lineHeight: 16,
   },
 });
 
