@@ -11,15 +11,13 @@ import {
   useColorScheme,
   Alert,
 } from 'react-native';
-import { useRouter } from 'expo-router';
-import { usePrayerTimes } from '../context/PrayerTimesContext';
-import { LocationData, NotificationSettings } from '../types';
+import { usePrayerTimes } from '../../context/PrayerTimesContext';
+import { LocationData, NotificationSettings } from '../../types';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function SettingsScreen() {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
-  const router = useRouter();
   const {
     location,
     notificationSettings,

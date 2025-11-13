@@ -11,28 +11,10 @@ export default function RootLayout() {
       <StatusBar style={colorScheme === "dark" ? "light" : "dark"} />
       <Stack
         screenOptions={{
-          headerStyle: {
-            backgroundColor: colorScheme === "dark" ? "#1a1a1a" : "#ffffff",
-          },
-          headerTintColor: colorScheme === "dark" ? "#ffffff" : "#000000",
-          headerTitleStyle: {
-            fontWeight: "bold",
-          },
+          headerShown: false,
         }}
       >
-        <Stack.Screen
-          name="index"
-          options={{
-            title: "İftar/Sahur Vakti",
-          }}
-        />
-        <Stack.Screen
-          name="settings"
-          options={{
-            title: "Ayarlar",
-            presentation: "modal",
-          }}
-        />
+        <Stack.Screen name="(tabs)" />
       </Stack>
     </PrayerTimesProvider>
   );

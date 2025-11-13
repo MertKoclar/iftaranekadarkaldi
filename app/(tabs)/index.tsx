@@ -9,10 +9,8 @@ import {
   useColorScheme,
   TouchableOpacity,
 } from 'react-native';
-import { useRouter } from 'expo-router';
-import { usePrayerTimes } from '../context/PrayerTimesContext';
-import { getNextPrayer, calculateCountdown, formatPrayerTime, formatHijriDate, formatGregorianDate } from '../utils/dateUtils';
-import { PrayerTime } from '../types';
+import { usePrayerTimes } from '../../context/PrayerTimesContext';
+import { getNextPrayer, calculateCountdown, formatPrayerTime, formatHijriDate, formatGregorianDate } from '../../utils/dateUtils';
 import { Ionicons } from '@expo/vector-icons';
 
 const PrayerTimeRow: React.FC<{ label: string; time: string; isHighlighted?: boolean }> = ({
@@ -53,7 +51,6 @@ const PrayerTimeRow: React.FC<{ label: string; time: string; isHighlighted?: boo
 export default function HomeScreen() {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
-  const router = useRouter();
   const {
     prayerTimes,
     location,
@@ -150,16 +147,6 @@ export default function HomeScreen() {
         />
       }
     >
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.settingsButton}
-          onPress={() => router.push('/settings')}
-        >
-          <Ionicons name="settings-outline" size={24} color={isDark ? '#ffffff' : '#000000'} />
-        </TouchableOpacity>
-      </View>
-
       {/* Konum Bilgisi */}
       {location && (
         <View style={styles.locationContainer}>
@@ -245,18 +232,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    padding: 16,
-  },
-  settingsButton: {
-    padding: 8,
-  },
   locationContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    marginTop: 16,
     marginBottom: 8,
     gap: 8,
   },
@@ -364,3 +344,4 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 });
+
