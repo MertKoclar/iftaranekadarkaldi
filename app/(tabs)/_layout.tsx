@@ -1,11 +1,24 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Tabs } from 'expo-router';
+import { Tabs, useRouter, useSegments } from 'expo-router';
+import * as Haptics from 'expo-haptics';
+import { useEffect, useRef } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
 
 export default function TabLayout() {
   const { isDark } = useTheme();
   const { t } = useLanguage();
+  const segments = useSegments();
+  const previousSegment = useRef<string | null>(null);
+
+  // Tab değişimini dinle ve haptic feedback ver
+  useEffect(() => {
+    const currentSegment = segments[segments.length - 1] || '';
+    if (previousSegment.current && previousSegment.current !== currentSegment) {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+    previousSegment.current = currentSegment;
+  }, [segments]);
 
   return (
     <Tabs
@@ -24,6 +37,7 @@ export default function TabLayout() {
         headerTitleStyle: {
           fontWeight: 'bold',
         },
+        animation: 'shift',
       }}
     >
       <Tabs.Screen
