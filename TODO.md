@@ -55,6 +55,13 @@
   - [x] İzin durumu görsel gösterimi (Settings sayfasında)
   - [x] İzin isteme butonları ve yönetimi
 
+- [x] **Dini Günler Sayfası**
+  - [x] Dini günler listesi (Ramazan, Bayramlar, Kandiller)
+  - [x] Hicri ve Miladi tarih gösterimi
+  - [x] Yaklaşan günler listesi
+  - [x] Kalan gün sayacı
+  - [x] Çoklu dil desteği
+
 ## 🎯 Öncelikli Görevler
 
 ### 🔴 Yüksek Öncelik
@@ -104,9 +111,10 @@
   - [ ] Aylık/yıllık istatistikler
   - [ ] Grafik görünümleri
 
-- [ ] **Hicri Takvim Görünümü**
-  - [ ] Hicri takvim sayfası
-  - [ ] Önemli günler işaretleme
+- [x] **Hicri Takvim Görünümü** ✅ (Kısmen tamamlandı)
+  - [x] Dini günler sayfası ✅
+  - [x] Önemli günler işaretleme ✅ (Dini günler listesi)
+  - [ ] Hicri takvim sayfası (tam takvim görünümü)
   - [ ] Hicri tarih dönüştürücü
 
 - [ ] **Paylaşım Özellikleri**
@@ -357,6 +365,7 @@ Düşük Etki + Yüksek Efor:
 - ✅ Offline mod desteği eklendi (Cache ile tam offline çalışma, offline göstergesi)
 - ✅ Bildirim izinleri iyileştirildi (İzin durumu gösterimi, ayarlara yönlendirme, açıklayıcı mesajlar)
 - ✅ Konum izinleri iyileştirildi (İzin durumu gösterimi, ayarlara yönlendirme, platform desteği, açıklayıcı mesajlar)
+- ✅ Dini günler sayfası eklendi (Ramazan, Bayramlar, Kandiller, Hicri/Miladi tarih gösterimi)
 
 ### Teknik Detaylar
 - **i18n**: react-i18next kullanılıyor

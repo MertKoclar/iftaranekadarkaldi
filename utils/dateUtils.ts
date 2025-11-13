@@ -1,6 +1,22 @@
 import { format, parse, differenceInSeconds, addDays } from 'date-fns';
 import { tr } from 'date-fns/locale/tr';
+import { enUS } from 'date-fns/locale';
+import { ar } from 'date-fns/locale/ar';
 import { PrayerTime, NextPrayerType, Countdown } from '../types';
+
+// Dil koduna göre locale döndür
+export const getDateLocale = (languageCode: string) => {
+  switch (languageCode) {
+    case 'tr':
+      return tr;
+    case 'en':
+      return enUS;
+    case 'ar':
+      return ar;
+    default:
+      return tr;
+  }
+};
 
 export const formatPrayerTime = (timeString: string): string => {
   try {
@@ -84,7 +100,8 @@ export const formatHijriDate = (hijri: { day: string; month: { en: string }; yea
   return `${hijri.day} ${monthName} ${hijri.year}`;
 };
 
-export const formatGregorianDate = (date: Date): string => {
-  return format(date, 'd MMMM yyyy EEEE', { locale: tr });
+export const formatGregorianDate = (date: Date, languageCode: string = 'tr'): string => {
+  const locale = getDateLocale(languageCode);
+  return format(date, 'd MMMM yyyy EEEE', { locale });
 };
 

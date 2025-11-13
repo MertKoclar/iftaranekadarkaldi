@@ -54,6 +54,18 @@
     "locationNotSetDesc": "Please select a location from settings",
     "errorLoading": "Failed to load data"
   },
+  "religiousDays": {
+    "title": "Religious Days",
+    "upcoming": "Upcoming Religious Days",
+    "allDays": "Religious Days",
+    "daysCount": "days",
+    "today": "Today",
+    "tomorrow": "Tomorrow",
+    "daysLeft": "days left",
+    "daysAgo": "days ago",
+    "noUpcoming": "No upcoming religious days",
+    "showingAll": "Showing all religious days"
+  },
   "settings": {
     "title": "Settings",
     "location": {

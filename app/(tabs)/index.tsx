@@ -50,7 +50,7 @@ const PrayerTimeRow: React.FC<{ label: string; time: string; isHighlighted?: boo
 
 export default function HomeScreen() {
   const { isDark } = useTheme();
-  const { t } = useLanguage();
+  const { t, currentLanguage } = useLanguage();
   const {
     prayerTimes,
     location,
@@ -178,7 +178,7 @@ export default function HomeScreen() {
       {/* Tarih Bilgisi */}
       <View style={styles.dateContainer}>
         <Text style={[styles.gregorianDate, { color: isDark ? '#ffffff' : '#000000' }]}>
-          {formatGregorianDate(new Date())}
+          {formatGregorianDate(new Date(), currentLanguage)}
         </Text>
         {/* 
         <Text style={[styles.hijriDate, { color: isDark ? '#cccccc' : '#666666' }]}>

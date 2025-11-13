@@ -54,6 +54,18 @@
     "locationNotSetDesc": "يرجى اختيار موقع من الإعدادات",
     "errorLoading": "فشل تحميل البيانات"
   },
+  "religiousDays": {
+    "title": "الأيام الدينية",
+    "upcoming": "الأيام الدينية القادمة",
+    "allDays": "الأيام الدينية",
+    "daysCount": "يوم",
+    "today": "اليوم",
+    "tomorrow": "غداً",
+    "daysLeft": "يوم متبقي",
+    "daysAgo": "يوم مضى",
+    "noUpcoming": "لا توجد أيام دينية قادمة",
+    "showingAll": "عرض جميع الأيام الدينية"
+  },
   "settings": {
     "title": "الإعدادات",
     "location": {

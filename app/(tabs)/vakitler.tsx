@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { addDays, endOfYear, format, isSameDay, subWeeks } from 'date-fns';
-import { tr } from 'date-fns/locale/tr';
+import { getDateLocale } from '../../utils/dateUtils';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
@@ -76,7 +76,7 @@ const setCachedPrayerTimes = async (cacheKey: string, data: PrayerTimesData): Pr
 
 export default function PrayerTimesScreen() {
   const { isDark } = useTheme();
-  const { t } = useLanguage();
+  const { t, currentLanguage } = useLanguage();
   const { location } = usePrayerTimes();
   
   const [prayerTimesList, setPrayerTimesList] = useState<DayPrayerTimes[]>([]);
@@ -368,7 +368,7 @@ export default function PrayerTimesScreen() {
         >
           <View style={styles.tableCellDate}>
             <Text style={[styles.dateCell, { color: isDark ? '#ffffff' : '#000000' }]}>
-              {format(date, 'd MMMM EEEE', { locale: tr })}
+              {format(date, 'd MMMM EEEE', { locale: getDateLocale(currentLanguage) })}
             </Text>
           </View>
           {[1, 2, 3, 4, 5, 6].map((i) => (
@@ -394,7 +394,7 @@ export default function PrayerTimesScreen() {
         >
           <View style={styles.tableCellDate}>
             <Text style={[styles.dateCell, { color: isDark ? '#ffffff' : '#000000' }]}>
-              {format(date, 'd MMMM EEEE', { locale: tr })}
+              {format(date, 'd MMMM EEEE', { locale: getDateLocale(currentLanguage) })}
             </Text>
           </View>
           {[1, 2, 3, 4, 5, 6].map((i) => (
@@ -430,7 +430,7 @@ export default function PrayerTimesScreen() {
       >
         <View style={styles.tableCellDate}>
           <Text style={[styles.dateCell, { color: isDark ? '#ffffff' : '#000000' }]}>
-            {format(date, 'd MMMM EEEE', { locale: tr })}
+            {format(date, 'd MMMM EEEE', { locale: getDateLocale(currentLanguage) })}
           </Text>
           {isToday && (
             <Text style={[styles.todayLabel, { color: '#FF9800' }]}>{t('common.today')}</Text>

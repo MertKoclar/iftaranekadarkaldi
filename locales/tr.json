@@ -54,6 +54,18 @@
     "locationNotSetDesc": "Lütfen ayarlardan konum seçin",
     "errorLoading": "Veri yüklenemedi"
   },
+  "religiousDays": {
+    "title": "Dini Günler",
+    "upcoming": "Yaklaşan Dini Günler",
+    "allDays": "Dini Günler",
+    "daysCount": "gün",
+    "today": "Bugün",
+    "tomorrow": "Yarın",
+    "daysLeft": "gün kaldı",
+    "daysAgo": "gün önce",
+    "noUpcoming": "Yaklaşan dini gün bulunmamaktadır",
+    "showingAll": "Tüm dini günler gösteriliyor"
+  },
   "settings": {
     "title": "Ayarlar",
     "location": {
