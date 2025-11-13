@@ -1,19 +1,19 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { addDays, endOfYear, format, isSameDay, subWeeks } from 'date-fns';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
   ActivityIndicator,
-  TouchableOpacity,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
 } from 'react-native';
 import { usePrayerTimes } from '../../context/PrayerTimesContext';
 import { useTheme } from '../../context/ThemeContext';
-import { formatPrayerTime, formatGregorianDate, formatHijriDate } from '../../utils/dateUtils';
+import { getPrayerTimesByCity, getPrayerTimesByCoordinates } from '../../services/api';
 import { PrayerTimesData } from '../../types';
-import { Ionicons } from '@expo/vector-icons';
-import { format, addDays, endOfYear, subWeeks, isSameDay } from 'date-fns';
-import { getPrayerTimesByCoordinates, getPrayerTimesByCity } from '../../services/api';
+import { formatPrayerTime } from '../../utils/dateUtils';
 
 interface DayPrayerTimes {
   date: Date;
@@ -22,9 +22,59 @@ interface DayPrayerTimes {
   error: string | null;
 }
 
+const CACHE_KEY_PREFIX = '@prayer_times_cache_';
+const CACHE_EXPIRY_DAYS = 7; // Cache 7 gün geçerli
+
+// Cache key oluştur
+const getCacheKey = (locationKey: string, dateString: string): string => {
+  return `${CACHE_KEY_PREFIX}${locationKey}_${dateString}`;
+};
+
+// Location için unique key oluştur
+const getLocationKey = (location: { city: string; country: string; latitude?: number; longitude?: number; isAuto: boolean }): string => {
+  if (location.isAuto && location.latitude && location.longitude) {
+    return `auto_${location.latitude.toFixed(4)}_${location.longitude.toFixed(4)}`;
+  }
+  return `manual_${location.city}_${location.country}`;
+};
+
+// Cache'den oku
+const getCachedPrayerTimes = async (cacheKey: string): Promise<PrayerTimesData | null> => {
+  try {
+    const cached = await AsyncStorage.getItem(cacheKey);
+    if (cached) {
+      const { data, timestamp } = JSON.parse(cached);
+      const now = Date.now();
+      const expiryTime = CACHE_EXPIRY_DAYS * 24 * 60 * 60 * 1000; // 7 gün
+      
+      if (now - timestamp < expiryTime) {
+        return data;
+      } else {
+        // Expired cache'i sil
+        await AsyncStorage.removeItem(cacheKey);
+      }
+    }
+  } catch (error) {
+    console.error('Cache okuma hatası:', error);
+  }
+  return null;
+};
+
+// Cache'e kaydet
+const setCachedPrayerTimes = async (cacheKey: string, data: PrayerTimesData): Promise<void> => {
+  try {
+    await AsyncStorage.setItem(cacheKey, JSON.stringify({
+      data,
+      timestamp: Date.now(),
+    }));
+  } catch (error) {
+    console.error('Cache kaydetme hatası:', error);
+  }
+};
+
 export default function PrayerTimesScreen() {
   const { isDark } = useTheme();
-  const { location, prayerTimes: currentPrayerTimes } = usePrayerTimes();
+  const { location } = usePrayerTimes();
   
   const [prayerTimesList, setPrayerTimesList] = useState<DayPrayerTimes[]>([]);
   const [loading, setLoading] = useState(true);
@@ -45,7 +95,7 @@ export default function PrayerTimesScreen() {
     return datesList;
   }, []);
 
-  // Vakitleri yükle (lazy loading - sadece görünen ve yakın tarihleri yükle)
+  // Vakitleri yükle (lazy loading - cache öncelikli)
   useEffect(() => {
     const loadPrayerTimes = async () => {
       if (!location) {
@@ -54,6 +104,8 @@ export default function PrayerTimesScreen() {
       }
 
       setLoading(true);
+      
+      const locationKey = getLocationKey(location);
       
       // İlk olarak tüm tarihler için boş liste oluştur
       const timesList: DayPrayerTimes[] = dates.map(date => ({
@@ -70,12 +122,30 @@ export default function PrayerTimesScreen() {
       const startIndex = Math.max(0, todayIndex - 7);
       const endIndex = Math.min(dates.length, todayIndex + 30);
 
-      // İlk batch'i yükle
+      // İlk batch'i yükle (cache'den önce kontrol et)
       for (let i = startIndex; i < endIndex; i++) {
         const date = dates[i];
         const dateString = format(date, 'yyyy-MM-dd');
+        const cacheKey = getCacheKey(locationKey, dateString);
 
-        // Loading state'i ayarla
+        // Önce cache'den kontrol et
+        const cachedData = await getCachedPrayerTimes(cacheKey);
+        
+        if (cachedData) {
+          // Cache'den bulundu, direkt kullan
+          setPrayerTimesList(prev => {
+            const updated = [...prev];
+            updated[i] = {
+              ...updated[i],
+              data: cachedData,
+              loading: false,
+            };
+            return updated;
+          });
+          continue;
+        }
+
+        // Cache'de yok, API'den çek
         setPrayerTimesList(prev => {
           const updated = [...prev];
           updated[i] = {
@@ -114,6 +184,9 @@ export default function PrayerTimesScreen() {
               districtName
             );
           }
+
+          // Cache'e kaydet
+          await setCachedPrayerTimes(cacheKey, data);
 
           setPrayerTimesList(prev => {
             const updated = [...prev];
@@ -164,12 +237,31 @@ export default function PrayerTimesScreen() {
       return newSet;
     });
 
+    const locationKey = getLocationKey(location);
+
     for (let i = startIndex; i < endIndex && i < dates.length; i++) {
       // Eğer zaten yüklenmişse atla
       if (prayerTimesList[i]?.data || prayerTimesList[i]?.loading) continue;
 
       const date = dates[i];
       const dateString = format(date, 'yyyy-MM-dd');
+      const cacheKey = getCacheKey(locationKey, dateString);
+
+      // Önce cache'den kontrol et
+      const cachedData = await getCachedPrayerTimes(cacheKey);
+      
+      if (cachedData) {
+        setPrayerTimesList(prev => {
+          const updated = [...prev];
+          updated[i] = {
+            ...updated[i],
+            data: cachedData,
+            loading: false,
+          };
+          return updated;
+        });
+        continue;
+      }
 
       setPrayerTimesList(prev => {
         const updated = [...prev];
@@ -211,6 +303,9 @@ export default function PrayerTimesScreen() {
           );
         }
 
+        // Cache'e kaydet
+        await setCachedPrayerTimes(cacheKey, data);
+
         setPrayerTimesList(prev => {
           const updated = [...prev];
           updated[i] = {
@@ -250,7 +345,8 @@ export default function PrayerTimesScreen() {
     loadDateRange(loadStart, loadEnd);
   };
 
-  const PrayerTimeCard: React.FC<{ dayData: DayPrayerTimes }> = ({ dayData }) => {
+  // Tablo satırı render fonksiyonu
+  const renderTableRow = (dayData: DayPrayerTimes, index: number) => {
     const { date, data, loading, error } = dayData;
     const isToday = isSameDay(date, new Date());
     const isPast = date < new Date() && !isToday;
@@ -258,15 +354,23 @@ export default function PrayerTimesScreen() {
     if (loading) {
       return (
         <View
+          key={index}
           style={[
-            styles.card,
+            styles.tableRow,
             {
-              backgroundColor: isDark ? '#1a1a1a' : '#f5f5f5',
-              borderColor: isDark ? '#333333' : '#e0e0e0',
+              backgroundColor: isDark ? '#1a1a1a' : '#ffffff',
+              borderBottomColor: isDark ? '#333333' : '#e0e0e0',
             },
           ]}
         >
-          <ActivityIndicator size="small" color="#FF9800" />
+          <View style={styles.tableCell}>
+            <ActivityIndicator size="small" color="#FF9800" />
+          </View>
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <View key={i} style={styles.tableCell}>
+              <Text style={[styles.loadingText, { color: isDark ? '#666666' : '#999999' }]}>-</Text>
+            </View>
+          ))}
         </View>
       );
     }
@@ -274,107 +378,88 @@ export default function PrayerTimesScreen() {
     if (error || !data) {
       return (
         <View
+          key={index}
           style={[
-            styles.card,
+            styles.tableRow,
             {
-              backgroundColor: isDark ? '#1a1a1a' : '#f5f5f5',
-              borderColor: isDark ? '#333333' : '#e0e0e0',
+              backgroundColor: isDark ? '#1a1a1a' : '#ffffff',
+              borderBottomColor: isDark ? '#333333' : '#e0e0e0',
             },
           ]}
         >
-          <Text style={[styles.errorText, { color: isDark ? '#f44336' : '#d32f2f' }]}>
-            {error || 'Veri yüklenemedi'}
-          </Text>
+          <View style={styles.tableCell}>
+            <Text style={[styles.dateCell, { color: isDark ? '#ffffff' : '#000000' }]}>
+              {format(date, 'dd.MM')}
+            </Text>
+          </View>
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <View key={i} style={styles.tableCell}>
+              <Text style={[styles.errorText, { color: isDark ? '#f44336' : '#d32f2f' }]}>-</Text>
+            </View>
+          ))}
         </View>
       );
     }
 
-    const { timings, date: dateInfo } = data;
+    const { timings } = data;
 
     return (
       <View
+        key={index}
         style={[
-          styles.card,
+          styles.tableRow,
           {
-            backgroundColor: isDark ? '#1a1a1a' : '#f5f5f5',
-            borderColor: isToday ? '#FF9800' : isDark ? '#333333' : '#e0e0e0',
-            borderWidth: isToday ? 2 : 1,
-            opacity: isPast ? 0.6 : 1,
+            backgroundColor: isToday
+              ? isDark
+                ? '#2a1a0a'
+                : '#fff3e0'
+              : isDark
+              ? '#1a1a1a'
+              : '#ffffff',
+            borderBottomColor: isDark ? '#333333' : '#e0e0e0',
+            borderLeftWidth: isToday ? 3 : 0,
+            borderLeftColor: isToday ? '#FF9800' : 'transparent',
           },
+          isPast && { opacity: 0.6 },
         ]}
       >
-        {/* Tarih Başlığı */}
-        <View style={styles.cardHeader}>
-          <View>
-            <Text style={[styles.dateText, { color: isDark ? '#ffffff' : '#000000' }]}>
-              {formatGregorianDate(date)}
-            </Text>
-            <Text style={[styles.hijriText, { color: isDark ? '#cccccc' : '#666666' }]}>
-              {formatHijriDate(dateInfo.hijri)}
-            </Text>
-          </View>
+        <View style={styles.tableCell}>
+          <Text style={[styles.dateCell, { color: isDark ? '#ffffff' : '#000000' }]}>
+            {format(date, 'dd.MM')}
+          </Text>
           {isToday && (
-            <View style={styles.todayBadge}>
-              <Text style={styles.todayBadgeText}>Bugün</Text>
-            </View>
+            <Text style={[styles.todayLabel, { color: '#FF9800' }]}>Bugün</Text>
           )}
         </View>
-
-        {/* Vakitler */}
-        <View style={styles.prayerTimesGrid}>
-          <View style={styles.prayerTimeItem}>
-            <Text style={[styles.prayerLabel, { color: isDark ? '#cccccc' : '#666666' }]}>
-              İmsak
-            </Text>
-            <Text style={[styles.prayerTime, { color: isDark ? '#ffffff' : '#000000' }]}>
-              {formatPrayerTime(timings.Fajr)}
-            </Text>
-          </View>
-
-          <View style={styles.prayerTimeItem}>
-            <Text style={[styles.prayerLabel, { color: isDark ? '#cccccc' : '#666666' }]}>
-              Güneş
-            </Text>
-            <Text style={[styles.prayerTime, { color: isDark ? '#ffffff' : '#000000' }]}>
-              {formatPrayerTime(timings.Sunrise)}
-            </Text>
-          </View>
-
-          <View style={styles.prayerTimeItem}>
-            <Text style={[styles.prayerLabel, { color: isDark ? '#cccccc' : '#666666' }]}>
-              Öğle
-            </Text>
-            <Text style={[styles.prayerTime, { color: isDark ? '#ffffff' : '#000000' }]}>
-              {formatPrayerTime(timings.Dhuhr)}
-            </Text>
-          </View>
-
-          <View style={styles.prayerTimeItem}>
-            <Text style={[styles.prayerLabel, { color: isDark ? '#cccccc' : '#666666' }]}>
-              İkindi
-            </Text>
-            <Text style={[styles.prayerTime, { color: isDark ? '#ffffff' : '#000000' }]}>
-              {formatPrayerTime(timings.Asr)}
-            </Text>
-          </View>
-
-          <View style={styles.prayerTimeItem}>
-            <Text style={[styles.prayerLabel, { color: isDark ? '#cccccc' : '#666666' }]}>
-              Akşam
-            </Text>
-            <Text style={[styles.prayerTime, { color: isDark ? '#ffffff' : '#000000' }]}>
-              {formatPrayerTime(timings.Maghrib)}
-            </Text>
-          </View>
-
-          <View style={styles.prayerTimeItem}>
-            <Text style={[styles.prayerLabel, { color: isDark ? '#cccccc' : '#666666' }]}>
-              Yatsı
-            </Text>
-            <Text style={[styles.prayerTime, { color: isDark ? '#ffffff' : '#000000' }]}>
-              {formatPrayerTime(timings.Isha)}
-            </Text>
-          </View>
+        <View style={styles.tableCell}>
+          <Text style={[styles.timeCell, { color: isDark ? '#ffffff' : '#000000' }]}>
+            {formatPrayerTime(timings.Fajr)}
+          </Text>
+        </View>
+        <View style={styles.tableCell}>
+          <Text style={[styles.timeCell, { color: isDark ? '#ffffff' : '#000000' }]}>
+            {formatPrayerTime(timings.Sunrise)}
+          </Text>
+        </View>
+        <View style={styles.tableCell}>
+          <Text style={[styles.timeCell, { color: isDark ? '#ffffff' : '#000000' }]}>
+            {formatPrayerTime(timings.Dhuhr)}
+          </Text>
+        </View>
+        <View style={styles.tableCell}>
+          <Text style={[styles.timeCell, { color: isDark ? '#ffffff' : '#000000' }]}>
+            {formatPrayerTime(timings.Asr)}
+          </Text>
+        </View>
+        <View style={styles.tableCell}>
+          <Text style={[styles.timeCell, { color: isDark ? '#ffffff' : '#000000' }]}>
+            {formatPrayerTime(timings.Maghrib)}
+          </Text>
+        </View>
+        <View style={styles.tableCell}>
+          <Text style={[styles.timeCell, { color: isDark ? '#ffffff' : '#000000' }]}>
+            {formatPrayerTime(timings.Isha)}
+          </Text>
         </View>
       </View>
     );
@@ -404,9 +489,6 @@ export default function PrayerTimesScreen() {
             {location.city}, {location.country}
           </Text>
         </View>
-        <Text style={[styles.infoText, { color: isDark ? '#cccccc' : '#666666' }]}>
-          {prayerTimesList.length} gün
-        </Text>
       </View>
 
       {loading && prayerTimesList.length === 0 ? (
@@ -421,13 +503,67 @@ export default function PrayerTimesScreen() {
           ref={scrollViewRef}
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
+          showsVerticalScrollIndicator={true}
           onScroll={handleScroll}
           scrollEventThrottle={400}
         >
-          {prayerTimesList.map((dayData, index) => (
-            <PrayerTimeCard key={index} dayData={dayData} />
-          ))}
+          <ScrollView
+            horizontal={true}
+            showsHorizontalScrollIndicator={true}
+            contentContainerStyle={styles.tableContainer}
+          >
+            <View>
+              {/* Tablo Başlığı */}
+              <View
+                style={[
+                  styles.tableHeader,
+                  {
+                    backgroundColor: isDark ? '#1a1a1a' : '#f5f5f5',
+                    borderBottomColor: isDark ? '#333333' : '#e0e0e0',
+                  },
+                ]}
+              >
+                <View style={styles.tableHeaderCell}>
+                  <Text style={[styles.headerText, { color: isDark ? '#ffffff' : '#000000' }]}>
+                    Gün
+                  </Text>
+                </View>
+                <View style={styles.tableHeaderCell}>
+                  <Text style={[styles.headerText, { color: isDark ? '#ffffff' : '#000000' }]}>
+                    İmsak
+                  </Text>
+                </View>
+                <View style={styles.tableHeaderCell}>
+                  <Text style={[styles.headerText, { color: isDark ? '#ffffff' : '#000000' }]}>
+                    Güneş
+                  </Text>
+                </View>
+                <View style={styles.tableHeaderCell}>
+                  <Text style={[styles.headerText, { color: isDark ? '#ffffff' : '#000000' }]}>
+                    Öğle
+                  </Text>
+                </View>
+                <View style={styles.tableHeaderCell}>
+                  <Text style={[styles.headerText, { color: isDark ? '#ffffff' : '#000000' }]}>
+                    İkindi
+                  </Text>
+                </View>
+                <View style={styles.tableHeaderCell}>
+                  <Text style={[styles.headerText, { color: isDark ? '#ffffff' : '#000000' }]}>
+                    Akşam
+                  </Text>
+                </View>
+                <View style={styles.tableHeaderCell}>
+                  <Text style={[styles.headerText, { color: isDark ? '#ffffff' : '#000000' }]}>
+                    Yatsı
+                  </Text>
+                </View>
+              </View>
+
+              {/* Tablo Satırları */}
+              {prayerTimesList.map((dayData, index) => renderTableRow(dayData, index))}
+            </View>
+          </ScrollView>
         </ScrollView>
       )}
     </View>
@@ -444,9 +580,9 @@ const styles = StyleSheet.create({
   },
   header: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-start',
     alignItems: 'center',
-    padding: 16,
+    padding: 12,
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(128, 128, 128, 0.2)',
   },
@@ -459,73 +595,66 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
   },
-  infoText: {
-    fontSize: 12,
-  },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    padding: 16,
     paddingBottom: 32,
   },
-  card: {
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    borderWidth: 1,
+  tableContainer: {
+    minWidth: '100%',
   },
-  cardHeader: {
+  // Tablo Stilleri
+  tableHeader: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 16,
-  },
-  dateText: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 4,
-  },
-  hijriText: {
-    fontSize: 13,
-  },
-  todayBadge: {
-    backgroundColor: '#FF9800',
+    borderBottomWidth: 2,
+    paddingVertical: 10,
     paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
   },
-  todayBadgeText: {
-    color: '#ffffff',
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  prayerTimesGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-  },
-  prayerTimeItem: {
-    flex: 1,
-    minWidth: '30%',
+  tableHeaderCell: {
+    width: 80,
+    paddingHorizontal: 6,
     alignItems: 'center',
-    paddingVertical: 8,
+    justifyContent: 'center',
   },
-  prayerLabel: {
+  headerText: {
     fontSize: 12,
-    marginBottom: 4,
+    fontWeight: '700',
+    textAlign: 'center',
   },
-  prayerTime: {
-    fontSize: 16,
+  tableRow: {
+    flexDirection: 'row',
+    borderBottomWidth: 1,
+    paddingVertical: 8,
+    paddingHorizontal: 8,
+    minHeight: 44,
+  },
+  tableCell: {
+    width: 80,
+    paddingHorizontal: 6,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  dateCell: {
+    fontSize: 13,
     fontWeight: '600',
+    textAlign: 'center',
+  },
+  todayLabel: {
+    fontSize: 9,
+    fontWeight: '600',
+    marginTop: 2,
+  },
+  timeCell: {
+    fontSize: 13,
     fontFamily: 'monospace',
+    textAlign: 'center',
   },
   loadingText: {
-    marginTop: 16,
-    fontSize: 16,
+    fontSize: 12,
   },
   errorText: {
-    fontSize: 14,
+    fontSize: 12,
     textAlign: 'center',
   },
   emptyText: {
