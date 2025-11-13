@@ -1,5 +1,5 @@
 import { format, parse, differenceInSeconds, addDays } from 'date-fns';
-import { tr } from 'date-fns/locale';
+import { tr } from 'date-fns/locale/tr';
 import { PrayerTime, NextPrayerType, Countdown } from '../types';
 
 export const formatPrayerTime = (timeString: string): string => {

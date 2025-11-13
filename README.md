@@ -1,50 +1,139 @@
-# Welcome to your Expo app 👋
+# İftar/Sahur Vakti Uygulaması
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+React Native ve Expo kullanılarak geliştirilmiş bir İftar ve Sahur Vakti takip uygulaması. Uygulama, kullanıcının mevcut veya manuel olarak belirlenen konumuna göre namaz vakitlerini alır ve bu vakitlere göre iftar ve sahura kalan süreyi hesaplayıp gösterir.
 
-## Get started
+## 🚀 Özellikler
 
-1. Install dependencies
+- **Otomatik ve Manuel Konum**: GPS ile otomatik konum veya manuel şehir/ülke girişi
+- **Canlı Geri Sayım**: İftar ve Sahur vakitlerine kalan süreyi gerçek zamanlı gösterir
+- **Namaz Vakitleri**: Günün tüm namaz vakitlerini (İmsak, Güneş, Öğle, İkindi, Akşam, Yatsı) gösterir
+- **Hicri ve Miladi Tarih**: Hem Hicri hem de Miladi tarih gösterimi
+- **Bildirimler**: İftar ve Sahur vakitleri için özelleştirilebilir bildirimler
+- **Karanlık Mod Desteği**: Otomatik karanlık/aydınlık mod desteği
+- **Modern UI**: Sade ve kullanıcı dostu arayüz
 
-   ```bash
-   npm install
-   ```
+## 🛠️ Teknoloji Stack
 
-2. Start the app
+- **React Native** (0.81.5)
+- **Expo** (~54.0.23)
+- **Expo Router** (file-based routing)
+- **TypeScript**
+- **Context API** (state management)
+- **AsyncStorage** (veri saklama)
+- **Expo Location** (konum servisleri)
+- **Expo Notifications** (bildirimler)
+- **date-fns** (tarih/zaman işlemleri)
+- **Aladhan API** (namaz vakitleri)
 
-   ```bash
-   npx expo start
-   ```
+## 📦 Kurulum
 
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+1. Bağımlılıkları yükleyin:
 
 ```bash
-npm run reset-project
+npm install
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+2. Uygulamayı başlatın:
 
-## Learn more
+```bash
+npx expo start
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+3. Uygulamayı çalıştırın:
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+- **iOS**: `i` tuşuna basın veya iOS simülatöründe açın
+- **Android**: `a` tuşuna basın veya Android emülatöründe açın
+- **Web**: `w` tuşuna basın
 
-## Join the community
+## 📱 Kullanım
 
-Join our community of developers creating universal apps.
+### İlk Kullanım
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+1. Uygulama ilk açıldığında konum izni isteyecektir. İzin vererek otomatik konum kullanabilirsiniz.
+2. Alternatif olarak, Ayarlar ekranından manuel olarak şehir ve ülke girebilirsiniz.
+
+### Ana Ekran
+
+- **Geri Sayım**: Ekranın ortasında bir sonraki vakit (İftar veya Sahur) için geri sayım gösterilir
+- **Namaz Vakitleri**: Tüm namaz vakitleri liste halinde gösterilir
+- **Tarih**: Hem Miladi hem de Hicri tarih gösterilir
+- **Yenileme**: Ekranı aşağı çekerek vakitleri yenileyebilirsiniz
+
+### Ayarlar Ekranı
+
+#### Konum Ayarları
+
+- **Otomatik Konum**: GPS ile otomatik konum kullanımı
+- **Manuel Konum**: Şehir ve ülke adı ile manuel konum ayarlama
+
+#### Bildirim Ayarları
+
+- **Bildirimleri Aç/Kapat**: Tüm bildirimleri tek seferde açıp kapatma
+- **Sahur Bildirimi**: Sahur vakti için bildirim ayarlama
+- **İftar Bildirimi**: İftar vakti için bildirim ayarlama
+- **Zamanlama**: Bildirimin vaktin kaç dakika öncesinde geleceğini ayarlama (0 = vakit geldiğinde)
+
+## 🔧 Yapılandırma
+
+### app.json
+
+Uygulama yapılandırması `app.json` dosyasında bulunur. Konum ve bildirim izinleri burada tanımlanmıştır.
+
+### API
+
+Uygulama, namaz vakitlerini almak için [Aladhan API](http://api.aladhan.com) kullanır. API yapılandırması `services/api.ts` dosyasında bulunur.
+
+## 📁 Proje Yapısı
+
+```
+iftaranekadarkaldi/
+├── app/                    # Expo Router ekranları
+│   ├── _layout.tsx        # Root layout
+│   ├── index.tsx          # Ana ekran
+│   └── settings.tsx       # Ayarlar ekranı
+├── context/               # Context API
+│   └── PrayerTimesContext.tsx
+├── services/              # Servisler
+│   ├── api.ts            # Aladhan API entegrasyonu
+│   ├── location.ts       # Konum servisleri
+│   └── notifications.ts  # Bildirim servisleri
+├── types/                 # TypeScript tipleri
+│   └── index.ts
+├── utils/                 # Yardımcı fonksiyonlar
+│   └── dateUtils.ts      # Tarih/zaman yardımcıları
+└── package.json
+```
+
+## 🎨 Özelleştirme
+
+### Tema
+
+Uygulama, sistem temasını otomatik olarak algılar. Karanlık mod ve aydınlık mod desteği vardır.
+
+### Hesaplama Metodu
+
+Varsayılan olarak Diyanet İşleri metodu (method: 2) kullanılır. `services/api.ts` dosyasında değiştirilebilir.
+
+## 📝 Notlar
+
+- Widget özelliği henüz implement edilmemiştir. Expo'nun widget desteği sınırlı olduğu için, bu özellik için native modül geliştirmesi gerekebilir.
+- Bildirimler, uygulama kapalıyken de çalışır ancak cihazın bildirim izni vermesi gerekir.
+- Konum izni verilmezse, manuel konum girişi yapılmalıdır.
+
+## 🤝 Katkıda Bulunma
+
+1. Fork edin
+2. Feature branch oluşturun (`git checkout -b feature/amazing-feature`)
+3. Commit edin (`git commit -m 'Add some amazing feature'`)
+4. Push edin (`git push origin feature/amazing-feature`)
+5. Pull Request açın
+
+## 📄 Lisans
+
+Bu proje özel bir projedir.
+
+## 🙏 Teşekkürler
+
+- [Aladhan API](http://api.aladhan.com) - Namaz vakitleri API'si
+- [Expo](https://expo.dev) - React Native framework
+- [date-fns](https://date-fns.org) - Tarih/zaman kütüphanesi

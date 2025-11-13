@@ -29,7 +29,7 @@ export const PrayerTimesProvider: React.FC<{ children: React.ReactNode }> = ({ c
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const loadPrayerTimes = useCallback(async (locationData: LocationData) => {
+  const loadPrayerTimes = useCallback(async (locationData: LocationData, settings?: NotificationSettings) => {
     try {
       setLoading(true);
       setError(null);
@@ -50,9 +50,10 @@ export const PrayerTimesProvider: React.FC<{ children: React.ReactNode }> = ({ c
       
       setPrayerTimes(data);
       
-      // Bildirimleri ayarla
-      if (notificationSettings.enabled && data.timings) {
-        await schedulePrayerNotifications(data.timings, notificationSettings);
+      // Bildirimleri ayarla (eğer ayarlar verilmişse)
+      const currentSettings = settings || notificationSettings;
+      if (currentSettings.enabled && data.timings) {
+        await schedulePrayerNotifications(data.timings, currentSettings);
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Namaz vakitleri alınırken bir hata oluştu';
@@ -76,12 +77,19 @@ export const PrayerTimesProvider: React.FC<{ children: React.ReactNode }> = ({ c
   }, [loadPrayerTimes]);
 
   const setAutoLocation = useCallback(async () => {
-    const autoLocation = await getAutoLocation();
-    if (autoLocation) {
-      setLocation(autoLocation);
-      await loadPrayerTimes(autoLocation);
-    } else {
-      setError('Konum alınamadı. Lütfen manuel olarak şehir ve ülke girin.');
+    setLoading(true);
+    try {
+      const autoLocation = await getAutoLocation();
+      if (autoLocation) {
+        setLocation(autoLocation);
+        await loadPrayerTimes(autoLocation);
+      } else {
+        setError('Konum alınamadı. Lütfen manuel olarak şehir ve ülke girin.');
+        setLoading(false);
+      }
+    } catch (err) {
+      setError('Konum alınırken bir hata oluştu');
+      setLoading(false);
     }
   }, [loadPrayerTimes]);
 
@@ -110,10 +118,17 @@ export const PrayerTimesProvider: React.FC<{ children: React.ReactNode }> = ({ c
         
         if (savedLocation) {
           setLocation(savedLocation);
-          await loadPrayerTimes(savedLocation);
+          await loadPrayerTimes(savedLocation, settings);
         } else {
           // Konum yoksa otomatik konum almayı dene
-          await setAutoLocation();
+          const autoLocation = await getAutoLocation();
+          if (autoLocation) {
+            setLocation(autoLocation);
+            await loadPrayerTimes(autoLocation, settings);
+          } else {
+            setError('Konum alınamadı. Lütfen manuel olarak şehir ve ülke girin.');
+            setLoading(false);
+          }
         }
       } catch (err) {
         setError('Uygulama başlatılırken bir hata oluştu');
@@ -123,12 +138,19 @@ export const PrayerTimesProvider: React.FC<{ children: React.ReactNode }> = ({ c
     };
     
     initialize();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Bildirim ayarları değiştiğinde vakitleri yeniden yükle
+  // Bildirim ayarları değiştiğinde bildirimleri güncelle
   useEffect(() => {
-    if (prayerTimes && notificationSettings.enabled) {
-      schedulePrayerNotifications(prayerTimes.timings, notificationSettings);
+    if (prayerTimes?.timings) {
+      if (notificationSettings.enabled) {
+        schedulePrayerNotifications(prayerTimes.timings, notificationSettings);
+      } else {
+        // Bildirimler kapalıysa tüm bildirimleri iptal et
+        const { cancelAllNotifications } = require('../services/notifications');
+        cancelAllNotifications();
+      }
     }
   }, [notificationSettings, prayerTimes]);
 

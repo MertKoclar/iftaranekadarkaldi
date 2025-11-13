@@ -2,7 +2,6 @@ import * as Notifications from 'expo-notifications';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NotificationSettings, PrayerTime } from '../types';
 import { format, parse, addMinutes, isBefore, isAfter } from 'date-fns';
-import { tr } from 'date-fns/locale';
 
 const NOTIFICATION_SETTINGS_KEY = '@prayer_times_notifications';
 

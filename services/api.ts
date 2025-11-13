@@ -1,6 +1,6 @@
 import { PrayerTimesData } from '../types';
 
-const API_BASE_URL = 'http://api.aladhan.com/v1';
+const API_BASE_URL = 'https://api.aladhan.com/v1';
 
 export interface PrayerTimesParams {
   city?: string;
