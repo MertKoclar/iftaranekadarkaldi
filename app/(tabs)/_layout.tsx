@@ -1,15 +1,14 @@
 import { Tabs } from 'expo-router';
-import { useColorScheme } from 'react-native';
+import { useTheme } from '../../context/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const { isDark } = useTheme();
 
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: '#4CAF50',
+        tabBarActiveTintColor: '#FF9800',
         tabBarInactiveTintColor: isDark ? '#666666' : '#999999',
         tabBarStyle: {
           backgroundColor: isDark ? '#1a1a1a' : '#ffffff',
@@ -33,7 +32,7 @@ export default function TabLayout() {
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="home" size={size} color={color} />
           ),
-          headerTitle: 'İftar/Sahur Vakti',
+          headerTitle: 'İftara ne kadar kaldı?',
         }}
       />
       <Tabs.Screen

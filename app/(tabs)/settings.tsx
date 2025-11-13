@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -8,16 +8,15 @@ import {
   TouchableOpacity,
   Switch,
   ActivityIndicator,
-  useColorScheme,
   Alert,
 } from 'react-native';
 import { usePrayerTimes } from '../../context/PrayerTimesContext';
+import { useTheme } from '../../context/ThemeContext';
 import { LocationData, NotificationSettings } from '../../types';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function SettingsScreen() {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const { isDark, themeMode, setThemeMode } = useTheme();
   const {
     location,
     notificationSettings,
@@ -35,6 +34,21 @@ export default function SettingsScreen() {
   const [fajrBeforeMinutes, setFajrBeforeMinutes] = useState(notificationSettings.fajr.beforeMinutes.toString());
   const [maghribEnabled, setMaghribEnabled] = useState(notificationSettings.maghrib.enabled);
   const [maghribBeforeMinutes, setMaghribBeforeMinutes] = useState(notificationSettings.maghrib.beforeMinutes.toString());
+
+  // Tema modu state'lerini güncelle
+  const [isLightMode, setIsLightMode] = useState(themeMode === 'light');
+  const [isDarkMode, setIsDarkMode] = useState(themeMode === 'dark');
+  const [isAutoMode, setIsAutoMode] = useState(themeMode === 'auto');
+
+  useEffect(() => {
+    setIsLightMode(themeMode === 'light');
+    setIsDarkMode(themeMode === 'dark');
+    setIsAutoMode(themeMode === 'auto');
+  }, [themeMode]);
+
+  const handleThemeChange = async (mode: 'light' | 'dark' | 'auto') => {
+    await setThemeMode(mode);
+  };
 
   const handleSaveLocation = async () => {
     if (!isAutoLocation) {
@@ -111,7 +125,7 @@ export default function SettingsScreen() {
         value={value}
         onValueChange={onValueChange}
         disabled={disabled}
-        trackColor={{ false: '#767577', true: '#4CAF50' }}
+        trackColor={{ false: '#767577', true: '#FF9800' }}
         thumbColor={value ? '#ffffff' : '#f4f3f4'}
       />
     </View>
@@ -122,6 +136,116 @@ export default function SettingsScreen() {
       style={[styles.container, { backgroundColor: isDark ? '#000000' : '#ffffff' }]}
       contentContainerStyle={styles.contentContainer}
     >
+      {/* Tema Ayarları */}
+      <SettingSection title="Tema Ayarları">
+        <View style={styles.themeOptions}>
+          <TouchableOpacity
+            style={[
+              styles.themeOption,
+              {
+                backgroundColor: isLightMode
+                  ? (isDark ? '#2a2a2a' : '#f0f0f0')
+                  : 'transparent',
+                borderColor: isLightMode ? '#FF9800' : (isDark ? '#444444' : '#cccccc'),
+              },
+            ]}
+            onPress={() => handleThemeChange('light')}
+          >
+            <Ionicons
+              name="sunny"
+              size={24}
+              color={isLightMode ? '#FF9800' : (isDark ? '#666666' : '#999999')}
+            />
+            <Text
+              style={[
+                styles.themeOptionText,
+                {
+                  color: isLightMode
+                    ? (isDark ? '#ffffff' : '#000000')
+                    : (isDark ? '#666666' : '#999999'),
+                  fontWeight: isLightMode ? '600' : '400',
+                },
+              ]}
+            >
+              Açık
+            </Text>
+            {isLightMode && (
+              <Ionicons name="checkmark-circle" size={20} color="#FF9800" style={styles.checkIcon} />
+            )}
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[
+              styles.themeOption,
+              {
+                backgroundColor: isDarkMode
+                  ? (isDark ? '#2a2a2a' : '#f0f0f0')
+                  : 'transparent',
+                borderColor: isDarkMode ? '#FF9800' : (isDark ? '#444444' : '#cccccc'),
+              },
+            ]}
+            onPress={() => handleThemeChange('dark')}
+          >
+            <Ionicons
+              name="moon"
+              size={24}
+              color={isDarkMode ? '#FF9800' : (isDark ? '#666666' : '#999999')}
+            />
+            <Text
+              style={[
+                styles.themeOptionText,
+                {
+                  color: isDarkMode
+                    ? (isDark ? '#ffffff' : '#000000')
+                    : (isDark ? '#666666' : '#999999'),
+                  fontWeight: isDarkMode ? '600' : '400',
+                },
+              ]}
+            >
+              Koyu
+            </Text>
+            {isDarkMode && (
+              <Ionicons name="checkmark-circle" size={20} color="#FF9800" style={styles.checkIcon} />
+            )}
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[
+              styles.themeOption,
+              {
+                backgroundColor: isAutoMode
+                  ? (isDark ? '#2a2a2a' : '#f0f0f0')
+                  : 'transparent',
+                borderColor: isAutoMode ? '#FF9800' : (isDark ? '#444444' : '#cccccc'),
+              },
+            ]}
+            onPress={() => handleThemeChange('auto')}
+          >
+            <Ionicons
+              name="phone-portrait"
+              size={24}
+              color={isAutoMode ? '#FF9800' : (isDark ? '#666666' : '#999999')}
+            />
+            <Text
+              style={[
+                styles.themeOptionText,
+                {
+                  color: isAutoMode
+                    ? (isDark ? '#ffffff' : '#000000')
+                    : (isDark ? '#666666' : '#999999'),
+                  fontWeight: isAutoMode ? '600' : '400',
+                },
+              ]}
+            >
+              Otomatik
+            </Text>
+            {isAutoMode && (
+              <Ionicons name="checkmark-circle" size={20} color="#FF9800" style={styles.checkIcon} />
+            )}
+          </TouchableOpacity>
+        </View>
+      </SettingSection>
+
       {/* Konum Ayarları */}
       <SettingSection title="Konum Ayarları">
         <SettingRow
@@ -175,7 +299,7 @@ export default function SettingsScreen() {
         )}
 
         <TouchableOpacity
-          style={[styles.saveButton, { backgroundColor: '#4CAF50' }]}
+          style={[styles.saveButton, { backgroundColor: '#FF9800' }]}
           onPress={handleSaveLocation}
           disabled={loading}
         >
@@ -188,7 +312,7 @@ export default function SettingsScreen() {
 
         {location && (
           <View style={styles.currentLocation}>
-            <Ionicons name="location" size={16} color="#4CAF50" />
+            <Ionicons name="location" size={16} color="#FF9800" />
             <Text style={[styles.currentLocationText, { color: isDark ? '#cccccc' : '#666666' }]}>
               Mevcut: {location.city}, {location.country}
             </Text>
@@ -275,7 +399,7 @@ export default function SettingsScreen() {
             )}
 
             <TouchableOpacity
-              style={[styles.saveButton, { backgroundColor: '#4CAF50', marginTop: 16 }]}
+              style={[styles.saveButton, { backgroundColor: '#FF9800', marginTop: 16 }]}
               onPress={handleSaveNotifications}
             >
               <Text style={styles.saveButtonText}>Bildirim Ayarlarını Kaydet</Text>
@@ -359,6 +483,30 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginTop: 8,
     marginBottom: 12,
+  },
+  themeOptions: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 8,
+  },
+  themeOption: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 2,
+    gap: 8,
+    position: 'relative',
+  },
+  themeOptionText: {
+    fontSize: 16,
+  },
+  checkIcon: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
   },
 });
 

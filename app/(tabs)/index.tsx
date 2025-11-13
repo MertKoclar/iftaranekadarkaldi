@@ -6,10 +6,10 @@ import {
   ScrollView,
   RefreshControl,
   ActivityIndicator,
-  useColorScheme,
   TouchableOpacity,
 } from 'react-native';
 import { usePrayerTimes } from '../../context/PrayerTimesContext';
+import { useTheme } from '../../context/ThemeContext';
 import { getNextPrayer, calculateCountdown, formatPrayerTime, formatHijriDate, formatGregorianDate } from '../../utils/dateUtils';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -18,8 +18,7 @@ const PrayerTimeRow: React.FC<{ label: string; time: string; isHighlighted?: boo
   time,
   isHighlighted = false,
 }) => {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const { isDark } = useTheme();
 
   return (
     <View
@@ -28,7 +27,7 @@ const PrayerTimeRow: React.FC<{ label: string; time: string; isHighlighted?: boo
         isHighlighted && {
           backgroundColor: isDark ? '#2a2a2a' : '#f0f0f0',
           borderLeftWidth: 4,
-          borderLeftColor: '#4CAF50',
+          borderLeftColor: '#FF9800',
         },
       ]}
     >
@@ -49,8 +48,7 @@ const PrayerTimeRow: React.FC<{ label: string; time: string; isHighlighted?: boo
 };
 
 export default function HomeScreen() {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const { isDark } = useTheme();
   const {
     prayerTimes,
     location,
@@ -104,7 +102,7 @@ export default function HomeScreen() {
   if (loading && !prayerTimes) {
     return (
       <View style={[styles.container, styles.centerContent, { backgroundColor: isDark ? '#000000' : '#ffffff' }]}>
-        <ActivityIndicator size="large" color="#4CAF50" />
+        <ActivityIndicator size="large" color="#FF9800" />
         <Text style={[styles.loadingText, { color: isDark ? '#ffffff' : '#000000' }]}>
           Vakitler yükleniyor...
         </Text>
@@ -150,7 +148,7 @@ export default function HomeScreen() {
       {/* Konum Bilgisi */}
       {location && (
         <View style={styles.locationContainer}>
-          <Ionicons name="location" size={20} color="#4CAF50" />
+          <Ionicons name="location" size={20} color="#FF9800" />
           <Text style={[styles.locationText, { color: isDark ? '#cccccc' : '#666666' }]}>
             {location.city}, {location.country}
           </Text>
@@ -323,7 +321,7 @@ const styles = StyleSheet.create({
   },
   retryButton: {
     marginTop: 24,
-    backgroundColor: '#4CAF50',
+    backgroundColor: '#FF9800',
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 8,

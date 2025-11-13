@@ -1,14 +1,14 @@
 import { Stack } from "expo-router";
-import { PrayerTimesProvider } from "../context/PrayerTimesContext";
-import { useColorScheme } from "react-native";
 import { StatusBar } from "expo-status-bar";
+import { PrayerTimesProvider } from "../context/PrayerTimesContext";
+import { ThemeProvider, useTheme } from "../context/ThemeContext";
 
-export default function RootLayout() {
-  const colorScheme = useColorScheme();
+function RootLayoutNav() {
+  const { isDark } = useTheme();
   
   return (
-    <PrayerTimesProvider>
-      <StatusBar style={colorScheme === "dark" ? "light" : "dark"} />
+    <>
+      <StatusBar style={isDark ? "light" : "dark"} />
       <Stack
         screenOptions={{
           headerShown: false,
@@ -16,6 +16,16 @@ export default function RootLayout() {
       >
         <Stack.Screen name="(tabs)" />
       </Stack>
-    </PrayerTimesProvider>
+    </>
+  );
+}
+
+export default function RootLayout() {
+  return (
+    <ThemeProvider>
+      <PrayerTimesProvider>
+        <RootLayoutNav />
+      </PrayerTimesProvider>
+    </ThemeProvider>
   );
 }

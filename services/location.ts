@@ -45,9 +45,32 @@ export const reverseGeocode = async (
     
     if (addresses && addresses.length > 0) {
       const address = addresses[0];
+      
+      // Şehir bilgisini öncelik sırasına göre kontrol et
+      // Türkiye'de genellikle subAdministrativeArea il adını içerir
+      const city = 
+        address.city || 
+        address.subAdministrativeArea || 
+        address.region || 
+        address.district || 
+        address.subLocality ||
+        'Bilinmeyen';
+      
+      // Ülke bilgisi
+      const country = address.country || 'Bilinmeyen';
+      
+      console.log('Reverse geocode sonucu:', {
+        city: address.city,
+        subAdministrativeArea: address.subAdministrativeArea,
+        region: address.region,
+        district: address.district,
+        country: address.country,
+        seçilenCity: city,
+      });
+      
       return {
-        city: address.city || address.subAdministrativeArea || 'Bilinmeyen',
-        country: address.country || 'Bilinmeyen',
+        city,
+        country,
       };
     }
     

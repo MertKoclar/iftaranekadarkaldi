@@ -117,8 +117,22 @@ export const PrayerTimesProvider: React.FC<{ children: React.ReactNode }> = ({ c
         const savedLocation = await getLocationData();
         
         if (savedLocation) {
-          setLocation(savedLocation);
-          await loadPrayerTimes(savedLocation, settings);
+          // Eğer kaydedilmiş konum "Bilinmeyen" içeriyorsa, yeniden konum almayı dene
+          if (savedLocation.city === 'Bilinmeyen' && savedLocation.isAuto) {
+            console.log('Kaydedilmiş konum "Bilinmeyen" içeriyor, yeniden konum alınıyor...');
+            const autoLocation = await getAutoLocation();
+            if (autoLocation && autoLocation.city !== 'Bilinmeyen') {
+              setLocation(autoLocation);
+              await loadPrayerTimes(autoLocation, settings);
+            } else {
+              // Yine "Bilinmeyen" geldiyse, kaydedilmiş konumu kullan
+              setLocation(savedLocation);
+              await loadPrayerTimes(savedLocation, settings);
+            }
+          } else {
+            setLocation(savedLocation);
+            await loadPrayerTimes(savedLocation, settings);
+          }
         } else {
           // Konum yoksa otomatik konum almayı dene
           const autoLocation = await getAutoLocation();
