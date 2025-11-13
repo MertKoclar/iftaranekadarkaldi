@@ -1,6 +1,6 @@
+import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import { useTheme } from '../../context/ThemeContext';
-import { Ionicons } from '@expo/vector-icons';
 
 export default function TabLayout() {
   const { isDark } = useTheme();
@@ -33,6 +33,16 @@ export default function TabLayout() {
             <Ionicons name="home" size={size} color={color} />
           ),
           headerTitle: 'İftara ne kadar kaldı?',
+        }}
+      />
+      <Tabs.Screen
+        name="vakitler"
+        options={{
+          title: 'Vakitler',
+          tabBarLabel: 'Vakitler',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="calendar" size={size} color={color} />
+          ),
         }}
       />
       <Tabs.Screen
