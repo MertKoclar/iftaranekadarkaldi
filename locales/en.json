@@ -1,0 +1,110 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "close": "Close",
+    "today": "Today",
+    "location": "Location",
+    "settings": "Settings",
+    "times": "Times",
+    "home": "Home",
+    "retry": "Retry"
+  },
+  "home": {
+    "title": "How long until Iftar?",
+    "nextPrayer": "Next Prayer",
+    "sahur": "Sahur",
+    "iftar": "Iftar",
+    "remaining": "Remaining Time",
+    "remainingTime": "remaining time",
+    "prayerTimes": "Prayer Times",
+    "imsak": "Fajr",
+    "imsakSahur": "Fajr (Sahur)",
+    "sunrise": "Sunrise",
+    "dhuhr": "Dhuhr",
+    "asr": "Asr",
+    "maghrib": "Maghrib",
+    "maghribIftar": "Maghrib (Iftar)",
+    "isha": "Isha",
+    "locationNotSet": "Location not set",
+    "locationNotSetDesc": "Please select a location from settings",
+    "pullToRefresh": "Pull down to refresh",
+    "errorLoading": "An error occurred while loading prayer times",
+    "loadingTimes": "Loading prayer times..."
+  },
+  "times": {
+    "title": "Prayer Times",
+    "day": "Day",
+    "imsak": "Fajr",
+    "sunrise": "Sunrise",
+    "dhuhr": "Dhuhr",
+    "asr": "Asr",
+    "maghrib": "Maghrib",
+    "isha": "Isha",
+    "loading": "Loading prayer times...",
+    "locationNotSet": "Location not set",
+    "locationNotSetDesc": "Please select a location from settings",
+    "errorLoading": "Failed to load data"
+  },
+  "settings": {
+    "title": "Settings",
+    "location": {
+      "title": "Location Settings",
+      "auto": "Auto Location",
+      "autoDesc": "Use GPS for automatic location",
+      "manual": "Manual Location",
+      "city": "City",
+      "district": "District",
+      "districtOptional": "District (Optional)",
+      "selectCity": "Select City",
+      "selectCityPlaceholder": "Select city",
+      "selectDistrict": "Select District",
+      "selectDistrictOptional": "Select district (optional)",
+      "saveLocation": "Save Location Settings",
+      "saving": "Saving...",
+      "saved": "Location saved",
+      "current": "Current:",
+      "error": "Error saving location",
+      "selectCityError": "Please select a city.",
+      "success": "Location settings saved.",
+      "errorSaving": "An error occurred while saving location settings."
+    },
+    "notifications": {
+      "title": "Notification Settings",
+      "enabled": "Enable Notifications",
+      "save": "Save Notification Settings",
+      "success": "Notification settings saved.",
+      "error": "An error occurred while saving notification settings.",
+      "sahur": {
+        "title": "Sahur (Fajr) Notification",
+        "enabled": "Send Sahur notification",
+        "beforeMinutes": "Notify before (minutes)? (0 = at prayer time)",
+        "minutes": "minutes"
+      },
+      "iftar": {
+        "title": "Iftar (Maghrib) Notification",
+        "enabled": "Send Iftar notification",
+        "beforeMinutes": "Notify before (minutes)? (0 = at prayer time)",
+        "minutes": "minutes"
+      }
+    },
+    "theme": {
+      "title": "Theme Settings",
+      "light": "Light",
+      "dark": "Dark",
+      "auto": "System"
+    },
+    "language": {
+      "title": "Language Settings",
+      "turkish": "Türkçe",
+      "english": "English",
+      "arabic": "العربية"
+    }
+  }
+}
+

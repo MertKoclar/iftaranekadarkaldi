@@ -1,0 +1,110 @@
+{
+  "common": {
+    "loading": "Yükleniyor...",
+    "error": "Hata",
+    "success": "Başarılı",
+    "save": "Kaydet",
+    "cancel": "İptal",
+    "delete": "Sil",
+    "edit": "Düzenle",
+    "close": "Kapat",
+    "today": "Bugün",
+    "location": "Konum",
+    "settings": "Ayarlar",
+    "times": "Vakitler",
+    "home": "Ana Sayfa",
+    "retry": "Tekrar Dene"
+  },
+  "home": {
+    "title": "İftara ne kadar kaldı?",
+    "nextPrayer": "Sonraki Vakit",
+    "sahur": "Sahur",
+    "iftar": "İftar",
+    "remaining": "Kalan Süre",
+    "remainingTime": "kalan süre",
+    "prayerTimes": "Namaz Vakitleri",
+    "imsak": "İmsak",
+    "imsakSahur": "İmsak (Sahur)",
+    "sunrise": "Güneş",
+    "dhuhr": "Öğle",
+    "asr": "İkindi",
+    "maghrib": "Akşam",
+    "maghribIftar": "Akşam (İftar)",
+    "isha": "Yatsı",
+    "locationNotSet": "Konum ayarlanmamış",
+    "locationNotSetDesc": "Lütfen ayarlardan konum seçin",
+    "pullToRefresh": "Yenilemek için aşağı çekin",
+    "errorLoading": "Vakitler yüklenirken bir hata oluştu",
+    "loadingTimes": "Vakitler yükleniyor..."
+  },
+  "times": {
+    "title": "Vakitler",
+    "day": "Gün",
+    "imsak": "İmsak",
+    "sunrise": "Güneş",
+    "dhuhr": "Öğle",
+    "asr": "İkindi",
+    "maghrib": "Akşam",
+    "isha": "Yatsı",
+    "loading": "Vakitler yükleniyor...",
+    "locationNotSet": "Konum ayarlanmamış",
+    "locationNotSetDesc": "Lütfen ayarlardan konum seçin",
+    "errorLoading": "Veri yüklenemedi"
+  },
+  "settings": {
+    "title": "Ayarlar",
+    "location": {
+      "title": "Konum Ayarları",
+      "auto": "Otomatik Konum",
+      "autoDesc": "GPS ile otomatik konum kullan",
+      "manual": "Manuel Konum",
+      "city": "İl",
+      "district": "İlçe",
+      "districtOptional": "İlçe (Opsiyonel)",
+      "selectCity": "İl Seçin",
+      "selectCityPlaceholder": "İl seçin",
+      "selectDistrict": "İlçe Seçin",
+      "selectDistrictOptional": "İlçe seçin (opsiyonel)",
+      "saveLocation": "Konum Ayarlarını Kaydet",
+      "saving": "Kaydediliyor...",
+      "saved": "Konum kaydedildi",
+      "current": "Mevcut:",
+      "error": "Konum kaydedilirken hata oluştu",
+      "selectCityError": "Lütfen il seçin.",
+      "success": "Konum ayarları kaydedildi.",
+      "errorSaving": "Konum ayarları kaydedilirken bir hata oluştu."
+    },
+    "notifications": {
+      "title": "Bildirim Ayarları",
+      "enabled": "Bildirimleri Aç",
+      "save": "Bildirim Ayarlarını Kaydet",
+      "success": "Bildirim ayarları kaydedildi.",
+      "error": "Bildirim ayarları kaydedilirken bir hata oluştu.",
+      "sahur": {
+        "title": "Sahur (İmsak) Bildirimi",
+        "enabled": "Sahur bildirimi gönder",
+        "beforeMinutes": "Kaç dakika önce bildir? (0 = vakit geldiğinde)",
+        "minutes": "dakika"
+      },
+      "iftar": {
+        "title": "İftar (Akşam) Bildirimi",
+        "enabled": "İftar bildirimi gönder",
+        "beforeMinutes": "Kaç dakika önce bildir? (0 = vakit geldiğinde)",
+        "minutes": "dakika"
+      }
+    },
+    "theme": {
+      "title": "Tema Ayarları",
+      "light": "Açık",
+      "dark": "Koyu",
+      "auto": "Sistem"
+    },
+    "language": {
+      "title": "Dil Ayarları",
+      "turkish": "Türkçe",
+      "english": "English",
+      "arabic": "العربية"
+    }
+  }
+}
+

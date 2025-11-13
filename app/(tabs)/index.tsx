@@ -1,17 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import React, { useEffect, useState } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  RefreshControl,
   ActivityIndicator,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
   TouchableOpacity,
+  View,
 } from 'react-native';
+import { useLanguage } from '../../context/LanguageContext';
 import { usePrayerTimes } from '../../context/PrayerTimesContext';
 import { useTheme } from '../../context/ThemeContext';
-import { getNextPrayer, calculateCountdown, formatPrayerTime, formatHijriDate, formatGregorianDate } from '../../utils/dateUtils';
-import { Ionicons } from '@expo/vector-icons';
+import { calculateCountdown, formatGregorianDate, formatPrayerTime, getNextPrayer } from '../../utils/dateUtils';
 
 const PrayerTimeRow: React.FC<{ label: string; time: string; isHighlighted?: boolean }> = ({
   label,
@@ -49,6 +50,7 @@ const PrayerTimeRow: React.FC<{ label: string; time: string; isHighlighted?: boo
 
 export default function HomeScreen() {
   const { isDark } = useTheme();
+  const { t } = useLanguage();
   const {
     prayerTimes,
     location,
@@ -104,7 +106,7 @@ export default function HomeScreen() {
       <View style={[styles.container, styles.centerContent, { backgroundColor: isDark ? '#000000' : '#ffffff' }]}>
         <ActivityIndicator size="large" color="#FF9800" />
         <Text style={[styles.loadingText, { color: isDark ? '#ffffff' : '#000000' }]}>
-          Vakitler yükleniyor...
+          {t('home.loadingTimes')}
         </Text>
       </View>
     );
@@ -121,7 +123,7 @@ export default function HomeScreen() {
           style={styles.retryButton}
           onPress={refreshPrayerTimes}
         >
-          <Text style={styles.retryButtonText}>Tekrar Dene</Text>
+          <Text style={styles.retryButtonText}>{t('common.retry')}</Text>
         </TouchableOpacity>
       </View>
     );
@@ -178,7 +180,7 @@ export default function HomeScreen() {
         ]}
       >
         <Text style={[styles.mainPrayerLabel, { color: isDark ? '#cccccc' : '#666666' }]}>
-          {isFajrNext ? 'Sahur' : 'İftar'}'a kalan süre
+          {isFajrNext ? t('home.sahur') : t('home.iftar')} {t('home.remainingTime')}
         </Text>
         <Text style={[styles.countdownText, { color: isDark ? '#ffffff' : '#000000' }]}>
           {formatCountdown()}
@@ -196,23 +198,23 @@ export default function HomeScreen() {
         ]}
       >
         <Text style={[styles.sectionTitle, { color: isDark ? '#ffffff' : '#000000' }]}>
-          Namaz Vakitleri
+          {t('home.prayerTimes')}
         </Text>
 
         <PrayerTimeRow
-          label="İmsak (Sahur)"
+          label={t('home.imsakSahur')}
           time={timings.Fajr}
           isHighlighted={nextPrayer?.type === 'fajr'}
         />
-        <PrayerTimeRow label="Güneş" time={timings.Sunrise} />
-        <PrayerTimeRow label="Öğle" time={timings.Dhuhr} />
-        <PrayerTimeRow label="İkindi" time={timings.Asr} />
+        <PrayerTimeRow label={t('home.sunrise')} time={timings.Sunrise} />
+        <PrayerTimeRow label={t('home.dhuhr')} time={timings.Dhuhr} />
+        <PrayerTimeRow label={t('home.asr')} time={timings.Asr} />
         <PrayerTimeRow
-          label="Akşam (İftar)"
+          label={t('home.maghribIftar')}
           time={timings.Maghrib}
           isHighlighted={nextPrayer?.type === 'maghrib'}
         />
-        <PrayerTimeRow label="Yatsı" time={timings.Isha} />
+        <PrayerTimeRow label={t('home.isha')} time={timings.Isha} />
       </View>
 
       {error && (

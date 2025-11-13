@@ -13,6 +13,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { useLanguage } from '../../context/LanguageContext';
 import { usePrayerTimes } from '../../context/PrayerTimesContext';
 import { useTheme } from '../../context/ThemeContext';
 import { getAllCities, getDistrictsByCity } from '../../data/turkeyCities';
@@ -20,6 +21,7 @@ import { LocationData, NotificationSettings } from '../../types';
 
 export default function SettingsScreen() {
   const { isDark, themeMode, setThemeMode } = useTheme();
+  const { t, currentLanguage, setLanguage, supportedLanguages } = useLanguage();
   const {
     location,
     notificationSettings,
@@ -107,7 +109,7 @@ export default function SettingsScreen() {
   const handleSaveLocation = async () => {
     if (!isAutoLocation) {
       if (!city.trim()) {
-        Alert.alert('Hata', 'Lütfen il seçin.');
+        Alert.alert(t('common.error'), t('settings.location.selectCityError'));
         return;
       }
     }
@@ -126,9 +128,9 @@ export default function SettingsScreen() {
         };
         await updateLocation(locationData);
       }
-      Alert.alert('Başarılı', 'Konum ayarları kaydedildi.');
+      Alert.alert(t('common.success'), t('settings.location.success'));
     } catch (error) {
-      Alert.alert('Hata', 'Konum ayarları kaydedilirken bir hata oluştu.');
+      Alert.alert(t('common.error'), t('settings.location.errorSaving'));
     } finally {
       setLoading(false);
     }
@@ -149,9 +151,9 @@ export default function SettingsScreen() {
 
     try {
       await updateNotificationSettings(settings);
-      Alert.alert('Başarılı', 'Bildirim ayarları kaydedildi.');
+      Alert.alert(t('common.success'), t('settings.notifications.success'));
     } catch (error) {
-      Alert.alert('Hata', 'Bildirim ayarları kaydedilirken bir hata oluştu.');
+      Alert.alert(t('common.error'), t('settings.notifications.error'));
     }
   };
 
@@ -193,7 +195,7 @@ export default function SettingsScreen() {
       contentContainerStyle={styles.contentContainer}
     >
       {/* Tema Ayarları */}
-      <SettingSection title="Tema Ayarları">
+      <SettingSection title={t('settings.theme.title')}>
         <View style={styles.themeOptions}>
           <TouchableOpacity
             style={[
@@ -223,7 +225,7 @@ export default function SettingsScreen() {
                 },
               ]}
             >
-              Açık
+              {t('settings.theme.light')}
             </Text>
             {isLightMode && (
               <Ionicons name="checkmark-circle" size={20} color="#FF9800" style={styles.checkIcon} />
@@ -258,7 +260,7 @@ export default function SettingsScreen() {
                 },
               ]}
             >
-              Koyu
+              {t('settings.theme.dark')}
             </Text>
             {isDarkMode && (
               <Ionicons name="checkmark-circle" size={20} color="#FF9800" style={styles.checkIcon} />
@@ -293,7 +295,7 @@ export default function SettingsScreen() {
                 },
               ]}
             >
-              Otomatik
+              {t('settings.theme.auto')}
             </Text>
             {isAutoMode && (
               <Ionicons name="checkmark-circle" size={20} color="#FF9800" style={styles.checkIcon} />
@@ -302,10 +304,120 @@ export default function SettingsScreen() {
         </View>
       </SettingSection>
 
+      {/* Dil Ayarları */}
+      <SettingSection title={t('settings.language.title')}>
+        <View style={styles.themeOptions}>
+          <TouchableOpacity
+            style={[
+              styles.themeOption,
+              {
+                backgroundColor: currentLanguage === 'tr'
+                  ? (isDark ? '#2a2a2a' : '#f0f0f0')
+                  : 'transparent',
+                borderColor: currentLanguage === 'tr' ? '#FF9800' : (isDark ? '#444444' : '#cccccc'),
+              },
+            ]}
+            onPress={() => setLanguage('tr')}
+          >
+            <Ionicons
+              name="language"
+              size={24}
+              color={currentLanguage === 'tr' ? '#FF9800' : (isDark ? '#666666' : '#999999')}
+            />
+            <Text
+              style={[
+                styles.themeOptionText,
+                {
+                  color: currentLanguage === 'tr'
+                    ? (isDark ? '#ffffff' : '#000000')
+                    : (isDark ? '#666666' : '#999999'),
+                  fontWeight: currentLanguage === 'tr' ? '600' : '400',
+                },
+              ]}
+            >
+              {t('settings.language.turkish')}
+            </Text>
+            {currentLanguage === 'tr' && (
+              <Ionicons name="checkmark-circle" size={20} color="#FF9800" style={styles.checkIcon} />
+            )}
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[
+              styles.themeOption,
+              {
+                backgroundColor: currentLanguage === 'en'
+                  ? (isDark ? '#2a2a2a' : '#f0f0f0')
+                  : 'transparent',
+                borderColor: currentLanguage === 'en' ? '#FF9800' : (isDark ? '#444444' : '#cccccc'),
+              },
+            ]}
+            onPress={() => setLanguage('en')}
+          >
+            <Ionicons
+              name="language"
+              size={24}
+              color={currentLanguage === 'en' ? '#FF9800' : (isDark ? '#666666' : '#999999')}
+            />
+            <Text
+              style={[
+                styles.themeOptionText,
+                {
+                  color: currentLanguage === 'en'
+                    ? (isDark ? '#ffffff' : '#000000')
+                    : (isDark ? '#666666' : '#999999'),
+                  fontWeight: currentLanguage === 'en' ? '600' : '400',
+                },
+              ]}
+            >
+              {t('settings.language.english')}
+            </Text>
+            {currentLanguage === 'en' && (
+              <Ionicons name="checkmark-circle" size={20} color="#FF9800" style={styles.checkIcon} />
+            )}
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[
+              styles.themeOption,
+              {
+                backgroundColor: currentLanguage === 'ar'
+                  ? (isDark ? '#2a2a2a' : '#f0f0f0')
+                  : 'transparent',
+                borderColor: currentLanguage === 'ar' ? '#FF9800' : (isDark ? '#444444' : '#cccccc'),
+              },
+            ]}
+            onPress={() => setLanguage('ar')}
+          >
+            <Ionicons
+              name="language"
+              size={24}
+              color={currentLanguage === 'ar' ? '#FF9800' : (isDark ? '#666666' : '#999999')}
+            />
+            <Text
+              style={[
+                styles.themeOptionText,
+                {
+                  color: currentLanguage === 'ar'
+                    ? (isDark ? '#ffffff' : '#000000')
+                    : (isDark ? '#666666' : '#999999'),
+                  fontWeight: currentLanguage === 'ar' ? '600' : '400',
+                },
+              ]}
+            >
+              {t('settings.language.arabic')}
+            </Text>
+            {currentLanguage === 'ar' && (
+              <Ionicons name="checkmark-circle" size={20} color="#FF9800" style={styles.checkIcon} />
+            )}
+          </TouchableOpacity>
+        </View>
+      </SettingSection>
+
       {/* Konum Ayarları */}
-      <SettingSection title="Konum Ayarları">
+      <SettingSection title={t('settings.location.title')}>
         <SettingRow
-          label="Otomatik Konum"
+          label={t('settings.location.auto')}
           value={isAutoLocation}
           onValueChange={setIsAutoLocation}
         />
@@ -313,7 +425,7 @@ export default function SettingsScreen() {
         {!isAutoLocation && (
           <View style={styles.inputContainer}>
             <Text style={[styles.inputLabel, { color: isDark ? '#ffffff' : '#000000' }]}>
-              İl
+              {t('settings.location.city')}
             </Text>
             <TouchableOpacity
               style={[
@@ -333,7 +445,7 @@ export default function SettingsScreen() {
                   },
                 ]}
               >
-                {city || 'İl seçin'}
+                {city || t('settings.location.selectCityPlaceholder')}
               </Text>
               <Ionicons name="chevron-down" size={20} color={isDark ? '#666666' : '#999999'} />
             </TouchableOpacity>
@@ -343,7 +455,7 @@ export default function SettingsScreen() {
         {!isAutoLocation && city && (
           <View style={styles.inputContainer}>
             <Text style={[styles.inputLabel, { color: isDark ? '#ffffff' : '#000000' }]}>
-              İlçe (Opsiyonel)
+              {t('settings.location.districtOptional')}
             </Text>
             <TouchableOpacity
               style={[
@@ -363,7 +475,7 @@ export default function SettingsScreen() {
                   },
                 ]}
               >
-                {district || 'İlçe seçin (opsiyonel)'}
+                {district || t('settings.location.selectDistrictOptional')}
               </Text>
               <Ionicons name="chevron-down" size={20} color={isDark ? '#666666' : '#999999'} />
             </TouchableOpacity>
@@ -378,7 +490,7 @@ export default function SettingsScreen() {
           {loading ? (
             <ActivityIndicator color="#ffffff" />
           ) : (
-            <Text style={styles.saveButtonText}>Konum Ayarlarını Kaydet</Text>
+            <Text style={styles.saveButtonText}>{t('settings.location.saveLocation')}</Text>
           )}
         </TouchableOpacity>
 
@@ -386,16 +498,16 @@ export default function SettingsScreen() {
           <View style={styles.currentLocation}>
             <Ionicons name="location" size={16} color="#FF9800" />
             <Text style={[styles.currentLocationText, { color: isDark ? '#cccccc' : '#666666' }]}>
-              Mevcut: {location.city}, {location.country}
+              {t('settings.location.current')} {location.city}, {location.country}
             </Text>
           </View>
         )}
       </SettingSection>
 
       {/* Bildirim Ayarları */}
-      <SettingSection title="Bildirim Ayarları">
+      <SettingSection title={t('settings.notifications.title')}>
         <SettingRow
-          label="Bildirimleri Aç"
+          label={t('settings.notifications.enabled')}
           value={notificationsEnabled}
           onValueChange={setNotificationsEnabled}
         />
@@ -405,10 +517,10 @@ export default function SettingsScreen() {
             <View style={styles.divider} />
 
             <Text style={[styles.subsectionTitle, { color: isDark ? '#ffffff' : '#000000' }]}>
-              Sahur (İmsak) Bildirimi
+              {t('settings.notifications.sahur.title')}
             </Text>
             <SettingRow
-              label="Sahur bildirimi gönder"
+              label={t('settings.notifications.sahur.enabled')}
               value={fajrEnabled}
               onValueChange={setFajrEnabled}
               disabled={!notificationsEnabled}
@@ -416,7 +528,7 @@ export default function SettingsScreen() {
             {fajrEnabled && (
               <View style={styles.inputContainer}>
                 <Text style={[styles.inputLabel, { color: isDark ? '#ffffff' : '#000000' }]}>
-                  Kaç dakika önce bildir? (0 = vakit geldiğinde)
+                  {t('settings.notifications.sahur.beforeMinutes')}
                 </Text>
                 <TextInput
                   style={[
@@ -439,10 +551,10 @@ export default function SettingsScreen() {
             <View style={styles.divider} />
 
             <Text style={[styles.subsectionTitle, { color: isDark ? '#ffffff' : '#000000' }]}>
-              İftar (Akşam) Bildirimi
+              {t('settings.notifications.iftar.title')}
             </Text>
             <SettingRow
-              label="İftar bildirimi gönder"
+              label={t('settings.notifications.iftar.enabled')}
               value={maghribEnabled}
               onValueChange={setMaghribEnabled}
               disabled={!notificationsEnabled}
@@ -450,7 +562,7 @@ export default function SettingsScreen() {
             {maghribEnabled && (
               <View style={styles.inputContainer}>
                 <Text style={[styles.inputLabel, { color: isDark ? '#ffffff' : '#000000' }]}>
-                  Kaç dakika önce bildir? (0 = vakit geldiğinde)
+                  {t('settings.notifications.iftar.beforeMinutes')}
                 </Text>
                 <TextInput
                   style={[
@@ -474,7 +586,7 @@ export default function SettingsScreen() {
               style={[styles.saveButton, { backgroundColor: '#FF9800', marginTop: 16 }]}
               onPress={handleSaveNotifications}
             >
-              <Text style={styles.saveButtonText}>Bildirim Ayarlarını Kaydet</Text>
+              <Text style={styles.saveButtonText}>{t('settings.notifications.save')}</Text>
             </TouchableOpacity>
           </>
         )}
@@ -491,7 +603,7 @@ export default function SettingsScreen() {
           <View style={[styles.modalContent, { backgroundColor: isDark ? '#1a1a1a' : '#ffffff' }]}>
             <View style={styles.modalHeader}>
               <Text style={[styles.modalTitle, { color: isDark ? '#ffffff' : '#000000' }]}>
-                İl Seçin
+                {t('settings.location.selectCity')}
               </Text>
               <TouchableOpacity onPress={() => setShowCityModal(false)}>
                 <Ionicons name="close" size={24} color={isDark ? '#ffffff' : '#000000'} />
@@ -534,7 +646,7 @@ export default function SettingsScreen() {
           <View style={[styles.modalContent, { backgroundColor: isDark ? '#1a1a1a' : '#ffffff' }]}>
             <View style={styles.modalHeader}>
               <Text style={[styles.modalTitle, { color: isDark ? '#ffffff' : '#000000' }]}>
-                İlçe Seçin
+                {t('settings.location.selectDistrict')}
               </Text>
               <TouchableOpacity onPress={() => setShowDistrictModal(false)}>
                 <Ionicons name="close" size={24} color={isDark ? '#ffffff' : '#000000'} />

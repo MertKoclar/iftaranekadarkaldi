@@ -10,6 +10,7 @@ import {
   Text,
   View,
 } from 'react-native';
+import { useLanguage } from '../../context/LanguageContext';
 import { usePrayerTimes } from '../../context/PrayerTimesContext';
 import { useTheme } from '../../context/ThemeContext';
 import { getPrayerTimesByCity, getPrayerTimesByCoordinates } from '../../services/api';
@@ -75,6 +76,7 @@ const setCachedPrayerTimes = async (cacheKey: string, data: PrayerTimesData): Pr
 
 export default function PrayerTimesScreen() {
   const { isDark } = useTheme();
+  const { t } = useLanguage();
   const { location } = usePrayerTimes();
   
   const [prayerTimesList, setPrayerTimesList] = useState<DayPrayerTimes[]>([]);
@@ -431,7 +433,7 @@ export default function PrayerTimesScreen() {
             {format(date, 'd MMMM EEEE', { locale: tr })}
           </Text>
           {isToday && (
-            <Text style={[styles.todayLabel, { color: '#FF9800' }]}>Bugün</Text>
+            <Text style={[styles.todayLabel, { color: '#FF9800' }]}>{t('common.today')}</Text>
           )}
         </View>
         <View style={styles.tableCell}>
@@ -473,10 +475,10 @@ export default function PrayerTimesScreen() {
       <View style={[styles.container, styles.centerContent, { backgroundColor: isDark ? '#000000' : '#ffffff' }]}>
         <Ionicons name="location-outline" size={64} color={isDark ? '#666666' : '#999999'} />
         <Text style={[styles.emptyText, { color: isDark ? '#ffffff' : '#000000' }]}>
-          Konum ayarlanmamış
+          {t('times.locationNotSet')}
         </Text>
         <Text style={[styles.emptySubtext, { color: isDark ? '#cccccc' : '#666666' }]}>
-          Lütfen ayarlardan konum seçin
+          {t('times.locationNotSetDesc')}
         </Text>
       </View>
     );
@@ -498,7 +500,7 @@ export default function PrayerTimesScreen() {
         <View style={[styles.centerContent, { flex: 1 }]}>
           <ActivityIndicator size="large" color="#FF9800" />
           <Text style={[styles.loadingText, { color: isDark ? '#ffffff' : '#000000' }]}>
-            Vakitler yükleniyor...
+            {t('times.loading')}
           </Text>
         </View>
       ) : (
@@ -520,41 +522,41 @@ export default function PrayerTimesScreen() {
               },
             ]}
           >
-            <View style={styles.tableHeaderCellDate}>
-              <Text style={[styles.headerText, { color: isDark ? '#ffffff' : '#000000' }]}>
-                Gün
-              </Text>
-            </View>
-            <View style={styles.tableHeaderCell}>
-              <Text style={[styles.headerText, { color: isDark ? '#ffffff' : '#000000' }]}>
-                İmsak
-              </Text>
-            </View>
-            <View style={styles.tableHeaderCell}>
-              <Text style={[styles.headerText, { color: isDark ? '#ffffff' : '#000000' }]}>
-                Güneş
-              </Text>
-            </View>
-            <View style={styles.tableHeaderCell}>
-              <Text style={[styles.headerText, { color: isDark ? '#ffffff' : '#000000' }]}>
-                Öğle
-              </Text>
-            </View>
-            <View style={styles.tableHeaderCell}>
-              <Text style={[styles.headerText, { color: isDark ? '#ffffff' : '#000000' }]}>
-                İkindi
-              </Text>
-            </View>
-            <View style={styles.tableHeaderCell}>
-              <Text style={[styles.headerText, { color: isDark ? '#ffffff' : '#000000' }]}>
-                Akşam
-              </Text>
-            </View>
-            <View style={styles.tableHeaderCell}>
-              <Text style={[styles.headerText, { color: isDark ? '#ffffff' : '#000000' }]}>
-                Yatsı
-              </Text>
-            </View>
+              <View style={styles.tableHeaderCellDate}>
+                <Text style={[styles.headerText, { color: isDark ? '#ffffff' : '#000000' }]}>
+                  {t('times.day')}
+                </Text>
+              </View>
+              <View style={styles.tableHeaderCell}>
+                <Text style={[styles.headerText, { color: isDark ? '#ffffff' : '#000000' }]}>
+                  {t('times.imsak')}
+                </Text>
+              </View>
+              <View style={styles.tableHeaderCell}>
+                <Text style={[styles.headerText, { color: isDark ? '#ffffff' : '#000000' }]}>
+                  {t('times.sunrise')}
+                </Text>
+              </View>
+              <View style={styles.tableHeaderCell}>
+                <Text style={[styles.headerText, { color: isDark ? '#ffffff' : '#000000' }]}>
+                  {t('times.dhuhr')}
+                </Text>
+              </View>
+              <View style={styles.tableHeaderCell}>
+                <Text style={[styles.headerText, { color: isDark ? '#ffffff' : '#000000' }]}>
+                  {t('times.asr')}
+                </Text>
+              </View>
+              <View style={styles.tableHeaderCell}>
+                <Text style={[styles.headerText, { color: isDark ? '#ffffff' : '#000000' }]}>
+                  {t('times.maghrib')}
+                </Text>
+              </View>
+              <View style={styles.tableHeaderCell}>
+                <Text style={[styles.headerText, { color: isDark ? '#ffffff' : '#000000' }]}>
+                  {t('times.isha')}
+                </Text>
+              </View>
           </View>
 
           {/* Tablo Satırları */}

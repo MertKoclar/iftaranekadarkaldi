@@ -1,0 +1,110 @@
+{
+  "common": {
+    "loading": "جاري التحميل...",
+    "error": "خطأ",
+    "success": "نجح",
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "delete": "حذف",
+    "edit": "تعديل",
+    "close": "إغلاق",
+    "today": "اليوم",
+    "location": "الموقع",
+    "settings": "الإعدادات",
+    "times": "الأوقات",
+    "home": "الرئيسية",
+    "retry": "إعادة المحاولة"
+  },
+  "home": {
+    "title": "كم تبقى حتى الإفطار؟",
+    "nextPrayer": "الصلاة القادمة",
+    "sahur": "السحور",
+    "iftar": "الإفطار",
+    "remaining": "الوقت المتبقي",
+    "remainingTime": "الوقت المتبقي",
+    "prayerTimes": "أوقات الصلاة",
+    "imsak": "الفجر",
+    "imsakSahur": "الفجر (السحور)",
+    "sunrise": "الشروق",
+    "dhuhr": "الظهر",
+    "asr": "العصر",
+    "maghrib": "المغرب",
+    "maghribIftar": "المغرب (الإفطار)",
+    "isha": "العشاء",
+    "locationNotSet": "الموقع غير محدد",
+    "locationNotSetDesc": "يرجى اختيار موقع من الإعدادات",
+    "pullToRefresh": "اسحب للأسفل للتحديث",
+    "errorLoading": "حدث خطأ أثناء تحميل أوقات الصلاة",
+    "loadingTimes": "جاري تحميل أوقات الصلاة..."
+  },
+  "times": {
+    "title": "أوقات الصلاة",
+    "day": "اليوم",
+    "imsak": "الفجر",
+    "sunrise": "الشروق",
+    "dhuhr": "الظهر",
+    "asr": "العصر",
+    "maghrib": "المغرب",
+    "isha": "العشاء",
+    "loading": "جاري تحميل أوقات الصلاة...",
+    "locationNotSet": "الموقع غير محدد",
+    "locationNotSetDesc": "يرجى اختيار موقع من الإعدادات",
+    "errorLoading": "فشل تحميل البيانات"
+  },
+  "settings": {
+    "title": "الإعدادات",
+    "location": {
+      "title": "إعدادات الموقع",
+      "auto": "الموقع التلقائي",
+      "autoDesc": "استخدم GPS للموقع التلقائي",
+      "manual": "الموقع اليدوي",
+      "city": "المدينة",
+      "district": "المنطقة",
+      "districtOptional": "المنطقة (اختياري)",
+      "selectCity": "اختر المدينة",
+      "selectCityPlaceholder": "اختر المدينة",
+      "selectDistrict": "اختر المنطقة",
+      "selectDistrictOptional": "اختر المنطقة (اختياري)",
+      "saveLocation": "حفظ إعدادات الموقع",
+      "saving": "جاري الحفظ...",
+      "saved": "تم حفظ الموقع",
+      "current": "الحالي:",
+      "error": "خطأ في حفظ الموقع",
+      "selectCityError": "يرجى اختيار مدينة.",
+      "success": "تم حفظ إعدادات الموقع.",
+      "errorSaving": "حدث خطأ أثناء حفظ إعدادات الموقع."
+    },
+    "notifications": {
+      "title": "إعدادات الإشعارات",
+      "enabled": "تفعيل الإشعارات",
+      "save": "حفظ إعدادات الإشعارات",
+      "success": "تم حفظ إعدادات الإشعارات.",
+      "error": "حدث خطأ أثناء حفظ إعدادات الإشعارات.",
+      "sahur": {
+        "title": "إشعار السحور (الفجر)",
+        "enabled": "إرسال إشعار السحور",
+        "beforeMinutes": "الإشعار قبل (دقائق)؟ (0 = عند وقت الصلاة)",
+        "minutes": "دقائق"
+      },
+      "iftar": {
+        "title": "إشعار الإفطار (المغرب)",
+        "enabled": "إرسال إشعار الإفطار",
+        "beforeMinutes": "الإشعار قبل (دقائق)؟ (0 = عند وقت الصلاة)",
+        "minutes": "دقائق"
+      }
+    },
+    "theme": {
+      "title": "إعدادات المظهر",
+      "light": "فاتح",
+      "dark": "داكن",
+      "auto": "النظام"
+    },
+    "language": {
+      "title": "إعدادات اللغة",
+      "turkish": "Türkçe",
+      "english": "English",
+      "arabic": "العربية"
+    }
+  }
+}
+

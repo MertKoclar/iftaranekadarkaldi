@@ -1,9 +1,11 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
+import { useLanguage } from '../../context/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
 
 export default function TabLayout() {
   const { isDark } = useTheme();
+  const { t } = useLanguage();
 
   return (
     <Tabs
@@ -27,19 +29,19 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Ana Sayfa',
-          tabBarLabel: 'Ana Sayfa',
+          title: t('common.home'),
+          tabBarLabel: t('common.home'),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="home" size={size} color={color} />
           ),
-          headerTitle: 'İftara ne kadar kaldı?',
+          headerTitle: t('home.title'),
         }}
       />
       <Tabs.Screen
         name="vakitler"
         options={{
-          title: 'Vakitler',
-          tabBarLabel: 'Vakitler',
+          title: t('times.title'),
+          tabBarLabel: t('times.title'),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="calendar" size={size} color={color} />
           ),
@@ -48,8 +50,8 @@ export default function TabLayout() {
       <Tabs.Screen
         name="settings"
         options={{
-          title: 'Ayarlar',
-          tabBarLabel: 'Ayarlar',
+          title: t('settings.title'),
+          tabBarLabel: t('settings.title'),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="settings" size={size} color={color} />
           ),
