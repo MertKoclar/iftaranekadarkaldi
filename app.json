@@ -14,6 +14,7 @@
     },
     "plugins": [
       "expo-router",
+      "expo-dev-client",
       [
         "expo-splash-screen",
         {
@@ -43,12 +44,14 @@
     ],
     "ios": {
       "supportsTablet": true,
+      "bundleIdentifier": "com.iftaranekadarkaldi",
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "Uygulamanın namaz vakitlerini gösterebilmesi için konumunuza erişmesi gerekiyor.",
         "NSLocationAlwaysAndWhenInUseUsageDescription": "Uygulamanın namaz vakitlerini gösterebilmesi için konumunuza erişmesi gerekiyor."
       }
     },
     "android": {
+      "package": "com.iftaranekadarkaldi",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",

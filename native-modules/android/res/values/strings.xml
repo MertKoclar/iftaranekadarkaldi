@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_description">İftar ve Sahur vakitlerine kalan süreyi gösterir</string>
+    <string name="widget_name">Namaz Vakitleri</string>
+</resources>
+

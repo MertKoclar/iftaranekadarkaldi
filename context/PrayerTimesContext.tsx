@@ -3,6 +3,7 @@ import React, { createContext, useCallback, useContext, useEffect, useState } fr
 import { getPrayerTimesByCity, getPrayerTimesByCoordinates } from '../services/api';
 import { getAutoLocation, getLocationData, saveLocationData } from '../services/location';
 import { getNotificationSettings, schedulePrayerNotifications } from '../services/notifications';
+import { updateWidgetData } from '../services/widgetData';
 import { LocationData, NotificationSettings, PrayerTimesData } from '../types';
 import { getErrorMessage } from '../utils/errorHandler';
 import { useLanguage } from './LanguageContext';
@@ -97,6 +98,8 @@ export const PrayerTimesProvider: React.FC<{ children: React.ReactNode }> = ({ c
           const cachedData = await loadPrayerTimesFromCache();
           if (cachedData) {
             setPrayerTimes(cachedData);
+            // Widget verisini güncelle (cache'den)
+            await updateWidgetData(cachedData, locationData);
             setError(t('errors.offlineMode'));
             setLoading(false);
             return;
@@ -138,6 +141,9 @@ export const PrayerTimesProvider: React.FC<{ children: React.ReactNode }> = ({ c
         await savePrayerTimesToCache(data);
         setIsOffline(false);
 
+        // Widget verisini güncelle
+        await updateWidgetData(data, locationData);
+
         // Bildirimleri ayarla (eğer ayarlar verilmişse)
         const currentSettings = settings || notificationSettings;
         if (currentSettings.enabled && data.timings) {
@@ -153,6 +159,8 @@ export const PrayerTimesProvider: React.FC<{ children: React.ReactNode }> = ({ c
           const cachedData = await loadPrayerTimesFromCache();
           if (cachedData) {
             setPrayerTimes(cachedData);
+            // Widget verisini güncelle (cache'den)
+            await updateWidgetData(cachedData, locationData);
             setError(t('errors.offlineMode'));
           }
         } else {
@@ -160,6 +168,8 @@ export const PrayerTimesProvider: React.FC<{ children: React.ReactNode }> = ({ c
           const cachedData = await loadPrayerTimesFromCache();
           if (cachedData) {
             setPrayerTimes(cachedData);
+            // Widget verisini güncelle (cache'den)
+            await updateWidgetData(cachedData, locationData);
             setError(apiError.userFriendlyMessage);
           }
         }

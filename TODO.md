@@ -65,12 +65,21 @@
 ## 🎯 Öncelikli Görevler
 
 ### 🔴 Yüksek Öncelik
-- [ ] **Widget Desteği (Native)**
-  - [ ] iOS widget implementasyonu
-  - [ ] Android widget implementasyonu
-  - [ ] Widget için özel tasarım (countdown, next prayer)
-  - [ ] Widget konfigürasyon ekranı
-  - [ ] Widget güncelleme mekanizması
+- [ ] **Widget Desteği (Native)** 🚧
+  - [x] Widget veri servisi oluşturuldu ✅ (`services/widgetData.ts`)
+  - [x] PrayerTimesContext'e widget veri güncelleme entegrasyonu ✅
+  - [x] Widget implementasyon rehberi hazırlandı ✅ (`docs/WIDGET_IMPLEMENTATION.md`)
+  - [x] expo-dev-client kurulumu ✅
+  - [x] Native modül dosyaları oluşturuldu ✅ (iOS ve Android)
+  - [x] Widget UI tasarımı hazırlandı ✅ (iOS SwiftUI, Android XML)
+  - [x] Native modül kurulum rehberi hazırlandı ✅ (`docs/NATIVE_MODULE_SETUP.md`)
+  - [ ] `expo prebuild` çalıştırılmalı (native klasörler oluşturulmalı)
+  - [ ] iOS WidgetKit Extension Xcode'da oluşturulmalı ve dosyalar kopyalanmalı
+  - [ ] iOS App Groups yapılandırması (Xcode'da)
+  - [ ] Android dosyaları native projeye kopyalanmalı
+  - [ ] Android MainApplication'a package eklenmeli
+  - [ ] AndroidManifest.xml'e widget receiver eklenmeli
+  - [ ] Widget güncelleme mekanizması testi
 
 - [x] **Hata Yönetimi İyileştirmeleri** ✅ (Tamamlandı)
   - [x] API hata mesajlarını kullanıcı dostu hale getir

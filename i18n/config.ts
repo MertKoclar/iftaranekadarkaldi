@@ -25,9 +25,11 @@ const getDefaultLanguage = async (): Promise<string> => {
     }
     
     // Cihaz dilini kontrol et
-    const deviceLanguage = Localization.locale.split('-')[0];
-    if (deviceLanguage === 'tr' || deviceLanguage === 'en' || deviceLanguage === 'ar') {
-      return deviceLanguage;
+    if (Localization.locale) {
+      const deviceLanguage = Localization.locale.split('-')[0];
+      if (deviceLanguage === 'tr' || deviceLanguage === 'en' || deviceLanguage === 'ar') {
+        return deviceLanguage;
+      }
     }
     
     return 'tr'; // Varsayılan Türkçe
@@ -51,9 +53,11 @@ export const saveLanguage = async (language: string): Promise<void> => {
 const getInitialLanguage = (): string => {
   try {
     // Cihaz dilini kontrol et
-    const deviceLanguage = Localization.locale.split('-')[0];
-    if (deviceLanguage === 'tr' || deviceLanguage === 'en' || deviceLanguage === 'ar') {
-      return deviceLanguage;
+    if (Localization.locale) {
+      const deviceLanguage = Localization.locale.split('-')[0];
+      if (deviceLanguage === 'tr' || deviceLanguage === 'en' || deviceLanguage === 'ar') {
+        return deviceLanguage;
+      }
     }
     return 'tr'; // Varsayılan Türkçe
   } catch (error) {
