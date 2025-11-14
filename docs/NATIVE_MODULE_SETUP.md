@@ -75,12 +75,19 @@ Eğer Swift ve Objective-C karışımı kullanıyorsanız, bridging header oluş
 1. `native-modules/android/WidgetDataManagerModule.kt` dosyasını `android/app/src/main/java/com/iftaranekadarkaldi/` klasörüne kopyala
 2. `native-modules/android/WidgetDataManagerPackage.kt` dosyasını `android/app/src/main/java/com/iftaranekadarkaldi/` klasörüne kopyala
 3. `native-modules/android/PrayerTimesWidgetProvider.kt` dosyasını `android/app/src/main/java/com/iftaranekadarkaldi/` klasörüne kopyala
+4. `native-modules/android/WidgetUpdateService.kt` dosyasını `android/app/src/main/java/com/iftaranekadarkaldi/` klasörüne kopyala
 
 #### b) Layout ve Resource Dosyalarını Kopyala
 
-1. `native-modules/android/res/layout/prayer_times_widget.xml` dosyasını `android/app/src/main/res/layout/` klasörüne kopyala
-2. `native-modules/android/res/xml/prayer_times_widget_info.xml` dosyasını `android/app/src/main/res/xml/` klasörüne kopyala
-3. `native-modules/android/res/values/strings.xml` dosyasını `android/app/src/main/res/values/` klasörüne kopyala (veya mevcut strings.xml'e ekle)
+1. `native-modules/android/res/layout/prayer_times_widget_2x2.xml` dosyasını `android/app/src/main/res/layout/` klasörüne kopyala
+2. `native-modules/android/res/layout/prayer_times_widget_4x2.xml` dosyasını `android/app/src/main/res/layout/` klasörüne kopyala
+3. `native-modules/android/res/layout/prayer_times_widget.xml` dosyasını `android/app/src/main/res/layout/` klasörüne kopyala (eski versiyon, opsiyonel)
+4. `native-modules/android/res/xml/prayer_times_widget_info.xml` dosyasını `android/app/src/main/res/xml/` klasörüne kopyala
+5. `native-modules/android/res/values/strings.xml` dosyasını `android/app/src/main/res/values/` klasörüne kopyala (veya mevcut strings.xml'e ekle)
+6. `native-modules/android/res/drawable/widget_background.xml` dosyasını `android/app/src/main/res/drawable/` klasörüne kopyala
+7. `native-modules/android/res/drawable/widget_background_compact.xml` dosyasını `android/app/src/main/res/drawable/` klasörüne kopyala
+8. `native-modules/android/res/drawable/widget_countdown_background.xml` dosyasını `android/app/src/main/res/drawable/` klasörüne kopyala
+9. `native-modules/android/res/drawable/widget_countdown_background_compact.xml` dosyasını `android/app/src/main/res/drawable/` klasörüne kopyala
 
 #### c) MainApplication.java/kt'ye Package Ekleme
 
@@ -99,8 +106,15 @@ override fun getPackages(): List<ReactPackage> {
 
 #### d) AndroidManifest.xml'e Widget Ekleme
 
-`android/app/src/main/AndroidManifest.xml` dosyasına ekle:
+`android/app/src/main/AndroidManifest.xml` dosyasına şu izinleri ve receiver'ları ekle:
 
+**Permissions:**
+```xml
+<uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
+<uses-permission android:name="android.permission.USE_EXACT_ALARM"/>
+```
+
+**Receivers:**
 ```xml
 <receiver android:name=".PrayerTimesWidgetProvider"
     android:exported="true">
@@ -110,6 +124,12 @@ override fun getPackages(): List<ReactPackage> {
     <meta-data
         android:name="android.appwidget.provider"
         android:resource="@xml/prayer_times_widget_info" />
+</receiver>
+<receiver android:name=".WidgetUpdateReceiver"
+    android:exported="false">
+    <intent-filter>
+        <action android:name="com.iftaranekadarkaldi.WIDGET_UPDATE" />
+    </intent-filter>
 </receiver>
 ```
 
@@ -141,9 +161,25 @@ npx expo run:android
 2. **Native modül bulunamadı**: MainApplication'da package'ın eklendiğinden emin olun
 3. **Layout hatası**: Layout dosyasının doğru klasörde olduğundan emin olun
 
+## 📝 Widget Özellikleri
+
+### Widget Boyutları
+
+Widget iki farklı boyutta desteklenir:
+- **2x2 Widget**: Kompakt dikey tasarım (`prayer_times_widget_2x2.xml`)
+- **4x2 Widget**: Geniş yatay tasarım (`prayer_times_widget_4x2.xml`)
+
+Widget boyutuna göre otomatik olarak uygun layout seçilir.
+
+### Widget Güncelleme
+
+Widget her saniye güncellenir. Bu, `WidgetUpdateService.kt` ve `WidgetUpdateReceiver.kt` dosyaları ile `AlarmManager` kullanılarak sağlanır.
+
 ## 📝 Notlar
 
 - Native modüller sadece development build'de çalışır (expo-dev-client)
 - Production build için `eas build` kullanılmalı
 - Widget'lar her platform için ayrı implement edilmelidir
+- Widget her saniye güncellenir (AlarmManager ile)
+- Widget boyutuna göre dinamik layout seçimi yapılır
 
