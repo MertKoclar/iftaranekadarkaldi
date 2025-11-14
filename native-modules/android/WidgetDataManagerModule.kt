@@ -1,4 +1,4 @@
-package com.iftaranekadarkaldi
+package com.poludev.iftaranekadarkaldi
 
 import android.content.Context
 import android.content.SharedPreferences

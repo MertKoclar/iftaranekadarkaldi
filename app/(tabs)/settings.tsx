@@ -1,10 +1,12 @@
 import { Ionicons } from '@expo/vector-icons';
+import Constants from 'expo-constants';
 import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
   FlatList,
   Keyboard,
+  Linking,
   Modal,
   ScrollView,
   StyleSheet,
@@ -14,10 +16,12 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { AdBanner } from '../../components/AdBanner';
 import { useLanguage } from '../../context/LanguageContext';
 import { usePrayerTimes } from '../../context/PrayerTimesContext';
 import { useTheme } from '../../context/ThemeContext';
 import { getAllCities, getDistrictsByCity } from '../../data/turkeyCities';
+import { useInterstitialAd } from '../../hooks/useInterstitialAd';
 import {
   getLocationPermissionStatus,
   LocationPermissionStatus,
@@ -42,6 +46,7 @@ export default function SettingsScreen() {
     setAutoLocation,
     updateNotificationSettings,
   } = usePrayerTimes();
+  const { showAd } = useInterstitialAd();
 
   const [isAutoLocation, setIsAutoLocation] = useState(location?.isAuto ?? true);
   
@@ -242,6 +247,8 @@ export default function SettingsScreen() {
       setFajrBeforeMinutes(fajrMinutes.toString());
       setMaghribBeforeMinutes(maghribMinutes.toString());
       Alert.alert(t('common.success'), t('settings.notifications.success'));
+      // Interstitial reklam göster
+      setTimeout(() => showAd(), 500);
     } catch (error) {
       Alert.alert(t('common.error'), t('settings.notifications.error'));
     }
@@ -782,6 +789,51 @@ export default function SettingsScreen() {
         </TouchableOpacity>
       </SettingSection>
 
+      {/* Hakkında Bölümü */}
+      <SettingSection title={t('settings.about.title') || 'Hakkında'}>
+        <TouchableOpacity
+          style={styles.aboutRow}
+          onPress={() => {
+            // Privacy Policy linkini buraya ekleyin
+            Linking.openURL('https://poludev.com/iftaranekadarkaldi/privacy-policy');
+          }}
+        >
+          <View style={styles.aboutRowContent}>
+            <Ionicons name="shield-checkmark-outline" size={20} color={isDark ? '#ffffff' : '#000000'} />
+            <Text style={[styles.aboutRowText, { color: isDark ? '#ffffff' : '#000000' }]}>
+              {t('settings.about.privacyPolicy') || 'Gizlilik Politikası'}
+            </Text>
+          </View>
+          <Ionicons name="chevron-forward" size={20} color={isDark ? '#666666' : '#999999'} />
+        </TouchableOpacity>
+
+        <View style={styles.divider} />
+
+        <View style={styles.aboutRow}>
+          <View style={styles.aboutRowContent}>
+            <Ionicons name="information-circle-outline" size={20} color={isDark ? '#ffffff' : '#000000'} />
+            <Text style={[styles.aboutRowText, { color: isDark ? '#ffffff' : '#000000' }]}>
+              {t('settings.about.version') || 'Versiyon'}
+            </Text>
+          </View>
+          <Text style={[styles.versionText, { color: isDark ? '#666666' : '#999999' }]}>
+            {Constants.expoConfig?.version || '1.0.0'}
+          </Text>
+        </View>
+
+        <View style={styles.aboutRow}>
+          <View style={styles.aboutRowContent}>
+            <Ionicons name="code-outline" size={20} color={isDark ? '#ffffff' : '#000000'} />
+            <Text style={[styles.aboutRowText, { color: isDark ? '#ffffff' : '#000000' }]}>
+              {t('settings.about.build') || 'Build'}
+            </Text>
+          </View>
+          <Text style={[styles.versionText, { color: isDark ? '#666666' : '#999999' }]}>
+            {Constants.expoConfig?.ios?.buildNumber || Constants.expoConfig?.android?.versionCode || '1'}
+          </Text>
+        </View>
+      </SettingSection>
+
       {/* İl Seçim Modal */}
       <Modal
         visible={showCityModal}
@@ -867,6 +919,9 @@ export default function SettingsScreen() {
           </View>
         </View>
       </Modal>
+      
+      {/* Banner Reklam */}
+      <AdBanner style={{ marginTop: 20, marginBottom: 20 }} />
     </ScrollView>
   );
 }
@@ -1079,6 +1134,25 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontSize: 16,
     fontWeight: '600',
+  },
+  aboutRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 12,
+  },
+  aboutRowContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    flex: 1,
+  },
+  aboutRowText: {
+    fontSize: 16,
+  },
+  versionText: {
+    fontSize: 14,
+    fontWeight: '500',
   },
 });
 

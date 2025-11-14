@@ -1,4 +1,4 @@
-package com.iftaranekadarkaldi
+package com.poludev.iftaranekadarkaldi
 
 import com.facebook.react.ReactPackage
 import com.facebook.react.bridge.NativeModule

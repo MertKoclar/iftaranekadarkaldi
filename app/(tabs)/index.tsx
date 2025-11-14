@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useFocusEffect } from 'expo-router';
 import * as Haptics from 'expo-haptics';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Animated,
@@ -11,9 +12,11 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { AdBanner } from '../../components/AdBanner';
 import { useLanguage } from '../../context/LanguageContext';
 import { usePrayerTimes } from '../../context/PrayerTimesContext';
 import { useTheme } from '../../context/ThemeContext';
+import { useInterstitialAd } from '../../hooks/useInterstitialAd';
 import { calculateCountdown, formatGregorianDate, formatPrayerTime, getNextPrayer } from '../../utils/dateUtils';
 
 // Loading Skeleton Component
@@ -179,6 +182,8 @@ export default function HomeScreen() {
     isRetrying,
     refreshPrayerTimes,
   } = usePrayerTimes();
+  const { showAd } = useInterstitialAd();
+  const adShownCount = useRef(0);
 
   const [countdown, setCountdown] = useState<{
     hours: number;
@@ -295,6 +300,17 @@ export default function HomeScreen() {
 
     return () => clearInterval(interval);
   }, [prayerTimes, refreshPrayerTimes, countdown?.minutes]);
+
+  // Sayfa her focus olduğunda interstitial reklam göster (her 3. seferde)
+  useFocusEffect(
+    useCallback(() => {
+      adShownCount.current += 1;
+      // Her 3. sayfa açılışında reklam göster
+      if (adShownCount.current % 3 === 0) {
+        setTimeout(() => showAd(), 1000);
+      }
+    }, [showAd])
+  );
 
   const formatCountdown = () => {
     if (!countdown) return '00:00:00';
@@ -453,6 +469,9 @@ export default function HomeScreen() {
           </Text>
         </View>
 
+        {/* Banner Reklam */}
+        <AdBanner style={styles.adBanner} />
+
         {/* Namaz Vakitleri Tablosu */}
         <View
           style={[
@@ -479,6 +498,9 @@ export default function HomeScreen() {
           />
           <PrayerTimeRow label={t('home.isha')} time={timings.Isha} />
         </View>
+
+        {/* Banner Reklam */}
+        <AdBanner style={styles.adBanner} />
 
         {error && (
           <View style={styles.errorBanner}>
@@ -664,5 +686,9 @@ const styles = StyleSheet.create({
   retryText: {
     marginLeft: 8,
     fontSize: 12,
+  },
+  adBanner: {
+    marginVertical: 16,
+    marginHorizontal: 16,
   },
 });

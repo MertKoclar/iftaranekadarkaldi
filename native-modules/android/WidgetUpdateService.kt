@@ -1,35 +1,9 @@
-package com.iftaranekadarkaldi
+package com.poludev.iftaranekadarkaldi
 
 import android.app.AlarmManager
 import android.app.PendingIntent
-import android.appwidget.AppWidgetManager
-import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import java.util.Calendar
-
-/**
- * Widget'ı periyodik olarak güncellemek için AlarmManager kullanır
- */
-class WidgetUpdateReceiver : BroadcastReceiver() {
-    override fun onReceive(context: Context, intent: Intent) {
-        try {
-            val widgetManager = AppWidgetManager.getInstance(context)
-            val componentName = android.content.ComponentName(context, PrayerTimesWidgetProvider::class.java)
-            val widgetIds = widgetManager.getAppWidgetIds(componentName)
-            
-            if (widgetIds.isNotEmpty()) {
-                // Widget'ı güncelle
-                PrayerTimesWidgetProvider().onUpdate(context, widgetManager, widgetIds)
-                
-                // Bir sonraki güncellemeyi hemen planla (1 saniye sonra)
-                WidgetUpdateService.scheduleNextUpdate(context)
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-    }
-}
 
 /**
  * Widget güncelleme servisi - AlarmManager ile periyodik güncelleme
@@ -47,7 +21,7 @@ object WidgetUpdateService {
         try {
             val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
             val intent = Intent(context, WidgetUpdateReceiver::class.java)
-            intent.action = "com.iftaranekadarkaldi.WIDGET_UPDATE"
+            intent.action = "com.poludev.iftaranekadarkaldi.WIDGET_UPDATE"
             val pendingIntent = PendingIntent.getBroadcast(
                 context,
                 REQUEST_CODE,
@@ -101,7 +75,7 @@ object WidgetUpdateService {
         try {
             val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
             val intent = Intent(context, WidgetUpdateReceiver::class.java)
-            intent.action = "com.iftaranekadarkaldi.WIDGET_UPDATE"
+            intent.action = "com.poludev.iftaranekadarkaldi.WIDGET_UPDATE"
             val pendingIntent = PendingIntent.getBroadcast(
                 context,
                 REQUEST_CODE,

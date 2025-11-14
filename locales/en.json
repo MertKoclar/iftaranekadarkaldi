@@ -16,7 +16,10 @@
     "retry": "Retry",
     "offline": "Offline",
     "online": "Online",
-    "retrying": "Retrying..."
+    "retrying": "Retrying...",
+    "skip": "Skip",
+    "next": "Next",
+    "start": "Start"
   },
   "home": {
     "title": "How long until Iftar?",
@@ -173,6 +176,24 @@
         "undetermined": "Pending"
       },
       "whyNeeded": "Location information is used to show you the most accurate prayer times. This information is only stored on your device and is never sent to any server."
+    }
+  },
+  "onboarding": {
+    "slide1": {
+      "title": "Prayer Times",
+      "description": "Track Iftar and Sahur times in real-time. See the countdown second by second."
+    },
+    "slide2": {
+      "title": "Notifications",
+      "description": "Receive notifications before Iftar and Sahur times. Never miss a prayer time."
+    },
+    "slide3": {
+      "title": "Religious Days",
+      "description": "View important religious days and holy nights in the calendar. Don't forget special days."
+    },
+    "slide4": {
+      "title": "Widget Support",
+      "description": "Add a widget to your home screen. View prayer times without opening the app."
     }
   }
 }

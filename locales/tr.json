@@ -16,7 +16,10 @@
     "retry": "Tekrar Dene",
     "offline": "Çevrimdışı",
     "online": "Çevrimiçi",
-    "retrying": "Yeniden deneniyor..."
+    "retrying": "Yeniden deneniyor...",
+    "skip": "Atla",
+    "next": "İleri",
+    "start": "Başla"
   },
   "home": {
     "title": "İftara ne kadar kaldı?",
@@ -173,6 +176,24 @@
         "undetermined": "Beklemede"
       },
       "whyNeeded": "Konum bilgisi, size en doğru namaz vakitlerini göstermek için kullanılır. Bu bilgi sadece cihazınızda saklanır ve hiçbir sunucuya gönderilmez."
+    }
+  },
+  "onboarding": {
+    "slide1": {
+      "title": "Namaz Vakitleri",
+      "description": "İftar ve sahur vakitlerini anlık olarak takip edin. Kalan süreyi saniye saniye görün."
+    },
+    "slide2": {
+      "title": "Bildirimler",
+      "description": "İftar ve sahur vakitlerinden önce bildirim alın. Hiçbir vakit kaçmasın."
+    },
+    "slide3": {
+      "title": "Dini Günler",
+      "description": "Önemli dini günleri ve kandilleri takvimde görün. Özel günleri unutmayın."
+    },
+    "slide4": {
+      "title": "Widget Desteği",
+      "description": "Ana ekranınıza widget ekleyin. Namaz vakitlerini uygulamayı açmadan görün."
     }
   }
 }

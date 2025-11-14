@@ -7,6 +7,7 @@ import {
   Text,
   View,
 } from 'react-native';
+import { AdBanner } from '../../components/AdBanner';
 import { useLanguage } from '../../context/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
 import { getUpcomingReligiousDays, ReligiousDay, religiousDays } from '../../data/religiousDays';
@@ -209,6 +210,9 @@ export default function ReligiousDaysScreen() {
           );
         })
       )}
+      
+      {/* Banner Reklam */}
+      <AdBanner style={{ marginTop: 20, marginBottom: 20 }} />
     </ScrollView>
   );
 }

@@ -1,4 +1,4 @@
-package com.iftaranekadarkaldi
+package com.poludev.iftaranekadarkaldi
 
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
@@ -94,7 +94,7 @@ class PrayerTimesWidgetProvider : AppWidgetProvider() {
         val views = RemoteViews(context.packageName, layoutId)
         
         // Widget'a tıklanınca uygulamayı aç
-        val intent = android.content.Intent(context, com.iftaranekadarkaldi.MainActivity::class.java)
+        val intent = android.content.Intent(context, com.poludev.iftaranekadarkaldi.MainActivity::class.java)
         intent.flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP
         val pendingIntent = android.app.PendingIntent.getActivity(
             context,
